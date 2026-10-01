@@ -23,6 +23,67 @@ body{font-family:system-ui,sans-serif;background:#f1f3f5;min-height:100vh}
 
 .app-screen{display:none;padding:1rem}
 .container{max-width:700px;margin:0 auto}
+/* ===== MODO TV / TELÃO — palco Full HD 1920x1080 ===== */
+.btn-tv{display:block;margin:0 0 10px auto;padding:7px 14px;border-radius:8px;border:1.5px solid #1a1a2e;background:#1a1a2e;color:#fff;font-size:12px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.05em}
+.btn-tv:hover{background:#33335a}
+#tv-wrap{display:none;position:fixed;inset:0;background:#0b1128;overflow:hidden;z-index:900}
+body.tv{overflow:hidden}
+body.tv #tv-wrap{display:block}
+body.tv .app-screen{display:none!important}
+#tv-stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;padding:36px 44px;box-sizing:border-box;
+  background:radial-gradient(1200px 600px at 15% 0%,#1b2a5c 0%,transparent 60%),radial-gradient(1000px 600px at 100% 100%,#3a1222 0%,transparent 55%),#0b1128;
+  color:#fff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;gap:24px}
+.tv-top{display:flex;align-items:center;justify-content:space-between;height:84px}
+.tv-titulo{font-size:44px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;line-height:1}
+.tv-titulo small{display:block;font-size:20px;font-weight:600;letter-spacing:.12em;color:#9fb0e0;margin-top:8px}
+.tv-status{text-align:right;font-size:20px;font-weight:700;color:#9fb0e0;text-transform:uppercase;letter-spacing:.06em}
+.tv-status b{color:#fff;font-size:26px}
+.tv-aovivo{display:inline-flex;align-items:center;gap:8px;color:#ff5252}
+.tv-aovivo i{width:14px;height:14px;border-radius:50%;background:#ff5252;animation:tvpisca 1.4s infinite}
+@keyframes tvpisca{50%{opacity:.25}}
+.tv-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;height:540px}
+.tv-card{background:#fff;border-radius:24px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 18px 50px rgba(0,0,0,.35);border-top:10px solid var(--cor)}
+.tv-foto{height:270px;background:#e8eaf6;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:150px}
+.tv-foto img{width:100%;height:100%;object-fit:cover;object-position:center top}
+.tv-card-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#1a1a2e;padding:6px 16px 14px}
+.tv-nome{font-size:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#555;text-align:center}
+.tv-votos{font-size:118px;font-weight:900;line-height:1.02;letter-spacing:-.02em}
+.tv-pct{font-size:56px;font-weight:900;color:var(--cor);line-height:1}
+.tv-base{font-size:18px;font-weight:700;color:#9fb0e0;text-transform:uppercase;letter-spacing:.08em;text-align:center;margin-top:-10px}
+.tv-baixo{flex:1;display:grid;grid-template-columns:1.85fr 1fr;gap:32px;min-height:0}
+.tv-painel{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:22px 30px;display:flex;flex-direction:column;justify-content:center;gap:14px}
+.tv-painel-tit{font-size:22px;font-weight:800;color:#9fb0e0;text-transform:uppercase;letter-spacing:.08em}
+.tv-linha{display:grid;grid-template-columns:380px 1fr 170px;align-items:center;gap:20px}
+.tv-linha .n{font-size:28px;font-weight:800;text-transform:uppercase;white-space:nowrap}
+.tv-linha .v{font-size:30px;font-weight:800;text-align:right}
+.tv-trilho{height:46px;background:rgba(255,255,255,.12);border-radius:12px;position:relative;overflow:hidden}
+.tv-fill{height:100%;border-radius:12px;background:var(--cor);transition:width .6s ease}
+.tv-fill-pct{position:absolute;top:50%;transform:translateY(-50%);font-size:26px;font-weight:900;white-space:nowrap}
+.tv-sec-nums{display:flex;justify-content:space-between;font-size:26px;font-weight:800;text-transform:uppercase}
+.tv-sec-nums .a{color:#69d36e}.tv-sec-nums .f{color:#ff6b6b}
+.tv-sec-big{font-size:84px;font-weight:900;line-height:1;text-align:center}
+.tv-sec-big small{font-size:30px;color:#9fb0e0;font-weight:700}
+.tv-sec-bar{height:46px;border-radius:12px;background:#e53935;overflow:hidden}
+.tv-sec-bar div{height:100%;background:#2e7d32;transition:width .6s ease}
+.tv-bar{display:none;position:fixed;top:14px;right:14px;z-index:999;gap:8px;align-items:center;background:rgba(0,0,0,.6);padding:8px;border-radius:12px;transition:opacity .4s}
+body.tv .tv-bar{display:flex}
+.tv-bar.oculta{opacity:0;pointer-events:none}
+.tv-bar button{border:none;border-radius:8px;padding:10px 14px;font-size:15px;font-weight:700;cursor:pointer;background:#fff;color:#1a1a2e;text-transform:uppercase}
+.tv-bar button.sair{background:#c62828;color:#fff}
+.btn-fs{font-size:15px;padding:2px 10px}
+/* --- tema DIA do modo TV --- */
+#tv-wrap.dia{background:#eef2f8}
+#tv-wrap.dia #tv-stage{background:radial-gradient(1200px 600px at 15% 0%,#dbe6ff 0%,transparent 60%),radial-gradient(1000px 600px at 100% 100%,#ffe3e3 0%,transparent 55%),#f4f6fb;color:#1a1a2e}
+#tv-wrap.dia .tv-titulo small,#tv-wrap.dia .tv-status,#tv-wrap.dia .tv-base,#tv-wrap.dia .tv-painel-tit,#tv-wrap.dia .tv-sec-big small{color:#5a6787}
+#tv-wrap.dia .tv-status b{color:#1a1a2e}
+#tv-wrap.dia .tv-card{box-shadow:0 12px 34px rgba(20,30,60,.15)}
+#tv-wrap.dia .tv-painel{background:#fff;border-color:#dde3ee;box-shadow:0 12px 34px rgba(20,30,60,.1)}
+#tv-wrap.dia .tv-trilho{background:#e7ebf2}
+#tv-wrap.dia .tv-linha .n{filter:none!important}
+#tv-wrap.dia .tv-linha .v{color:#1a1a2e}
+#tv-wrap.dia .tv-fill-pct.fora{color:#1a1a2e!important}
+#tv-wrap.dia .tv-sec-nums .a{color:#2e7d32}
+#tv-wrap.dia .tv-sec-nums .f{color:#c62828}
 .topbar{display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:12px;border:1px solid #e0e0e0;padding:.6rem 1rem;margin-bottom:1rem}
 .topbar-title{font-size:16px;font-weight:700;color:#1a1a2e;text-transform:uppercase;letter-spacing:.04em}
 .topbar-user{display:flex;align-items:center;gap:8px}
@@ -156,6 +217,7 @@ body{font-family:system-ui,sans-serif;background:#f1f3f5;min-height:100vh}
           <div class="user-badge" id="top-user">—</div>
           <div class="user-role" id="top-role">—</div>
         </div>
+        <button class="btn-logout btn-fs" onclick="tvTelaCheia()" title="Tela cheia">⛶</button>
         <button class="btn-logout" onclick="doLogout()">Sair</button>
       </div>
     </div>
@@ -169,6 +231,7 @@ body{font-family:system-ui,sans-serif;background:#f1f3f5;min-height:100vh}
 
     <!-- RESUMO -->
     <div class="tab-pane active" id="pane-resumo">
+      <button class="btn-tv" onclick="entrarModoTV()">📺 Modo TV / Telão</button>
       <div class="base-calc" id="base-cards"></div>
       <div class="header">
         <div class="card">
@@ -258,7 +321,7 @@ body{font-family:system-ui,sans-serif;background:#f1f3f5;min-height:100vh}
           <div class="field"><label style="color:#c62828">Paulo Câmara</label><input type="number" id="in-p" placeholder="0" min="0" style="text-transform:none"></div>
           <div class="field"><label style="color:#2e7d32">Rogério Andrade</label><input type="number" id="in-r" placeholder="0" min="0" style="text-transform:none"></div>
         </div>
-        <div class="sec-title">Fotos do comprovante</div>
+        <div class="sec-title">Fotos do comprovante <span style="color:#c62828">* obrigatório</span></div>
         <div class="foto-drop" onclick="document.getElementById('file-in').click()">📷 Toque para anexar fotos</div>
         <input type="file" id="file-in" accept="image/*" multiple style="display:none" onchange="addFotoForm(this)">
         <div class="fotos-mini" id="form-fotos"></div>
@@ -317,6 +380,31 @@ body{font-family:system-ui,sans-serif;background:#f1f3f5;min-height:100vh}
   </div>
 </div>
 
+<div id="tv-wrap"><div id="tv-stage">
+  <div class="tv-top">
+    <div class="tv-titulo">Apuração de votos<small>Resultado parcial · soma de todas as seções</small></div>
+    <div class="tv-status"><span class="tv-aovivo"><i></i>AO VIVO</span><br>ATUALIZADO ÀS <b id="tv-hora">--:--:--</b></div>
+  </div>
+  <div class="tv-cards" id="tv-cards"></div>
+  <div class="tv-base" id="tv-base"></div>
+  <div class="tv-baixo">
+    <div class="tv-painel">
+      <div class="tv-painel-tit" id="tv-ult-tit">Última seção digitada</div>
+      <div id="tv-linhas" style="display:flex;flex-direction:column;gap:16px"></div>
+    </div>
+    <div class="tv-painel">
+      <div class="tv-painel-tit">Seções apuradas</div>
+      <div class="tv-sec-big" id="tv-sec-big">0 <small>DE 0</small></div>
+      <div class="tv-sec-bar"><div id="tv-sec-fill" style="width:0%"></div></div>
+      <div class="tv-sec-nums"><span class="a" id="tv-sec-a">APURADAS 0,0%</span><span class="f" id="tv-sec-f">FALTAM 100,0%</span></div>
+    </div>
+  </div>
+</div></div>
+<div class="tv-bar" id="tv-bar">
+  <button id="tv-tema" onclick="tvAlternarTema()" title="Dia / Noite (tecla T)">☀️ Dia</button>
+  <button id="tv-fs" onclick="tvTelaCheia()" title="Tela cheia (tecla F)">⛶ Tela cheia</button>
+  <button class="sair" onclick="sairModoTV()">✕ Sair</button>
+</div>
 <script>
 // ===================== DADOS (compartilhados via API / D1) =====================
 var DATA = { regs: [], totalSec: 245, totalEleitores: 0, users: [] };
@@ -325,6 +413,9 @@ var editingUserId = null;
 var formFotos = [];
 var TOKEN = localStorage.getItem('vt_token') || '';
 var ultimoEstado = '';
+var ultimaVersao = -1;
+var INTERVALO_MS = 2000;   // intervalo da atualização automática
+var consultando = false;
 var pollTimer = null;
 var abertos = {};      // seções expandidas na lista
 var cacheFotos = {};   // fotos já baixadas por seção
@@ -347,18 +438,29 @@ function carregarEstado(forcar) {
     var assinatura = JSON.stringify(s);
     if (!forcar && assinatura === ultimoEstado) return;
     ultimoEstado = assinatura;
+    ultimaVersao = s.versao;
     DATA = s;
     renderAll();
+    if (document.body.classList.contains('tv')) renderTV();
   });
 }
 
 function iniciarPolling() {
   pararPolling();
   pollTimer = setInterval(function() {
-    if (document.hidden || !currentUser) return;
-    carregarEstado(false).catch(function(){});
-  }, 8000);
+    if (document.hidden || !currentUser || consultando) return;
+    consultando = true;
+    // pergunta só a versão; baixa tudo apenas quando algo mudou
+    api('GET','versao').then(function(r) {
+      if (r.v !== ultimaVersao) return carregarEstado(false);
+    }).catch(function(){}).then(function(){ consultando = false; });
+  }, INTERVALO_MS);
 }
+// ao voltar para o app (trocou de aba / desbloqueou o celular), atualiza na hora
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden && currentUser) carregarEstado(false).catch(function(){});
+});
+
 function pararPolling() { if (pollTimer) clearInterval(pollTimer); pollTimer = null; }
 
 // ===================== LOGIN =====================
@@ -389,8 +491,9 @@ function doLogin() {
 
 function sairLocal() {
   pararPolling();
+  document.body.classList.remove('tv');
   TOKEN=''; localStorage.removeItem('vt_token');
-  currentUser = null; ultimoEstado=''; abertos={}; cacheFotos={};
+  currentUser = null; ultimoEstado=''; ultimaVersao=-1; abertos={}; cacheFotos={};
   document.getElementById('app-screen').style.display='none';
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('l-user').value='';
@@ -569,6 +672,14 @@ function addReg() {
   var p=parseInt(document.getElementById('in-p').value)||0;
   var r=parseInt(document.getElementById('in-r').value)||0;
   if (!zona||!sec) {showMsg('err-msg','INFORME A ZONA E A SEÇÃO.');return;}
+  if (!formFotos.length) {
+    showMsg('err-msg','ANEXE PELO MENOS UMA FOTO DO COMPROVANTE PARA SALVAR.');
+    var drop=document.querySelector('#pane-registro .foto-drop');
+    drop.style.borderColor='#c62828'; drop.style.background='#ffebee';
+    drop.scrollIntoView({behavior:'smooth',block:'center'});
+    setTimeout(function(){drop.style.borderColor='';drop.style.background='';},3000);
+    return;
+  }
   var btn=document.querySelector('#pane-registro .btn-salvar');
   salvandoReg=true; btn.disabled=true; btn.textContent='SALVANDO...';
   api('POST','regs',{zona:zona,sec:sec,d:d,p:p,r:r,fotos:formFotos.map(function(f){return f.src})})
@@ -668,6 +779,7 @@ function setBar(barId,lpctId,pct) {
   // largura mínima para a barra não sumir quando o candidato tem poucos votos
   var larg=pct>0?Math.min(100,Math.max(pct,1.5)):0;
   bar.style.width=larg+'%';
+  bar.style.paddingRight=larg?'':'0'; // sem votos: barra some por completo
   lbl.textContent=fmtPct(pct);
   if (pct>=12) {
     lbl.className='bar-pct';lbl.style.left='';lbl.style.color='';
@@ -757,6 +869,120 @@ function renderAll() {
       +'</div>'+fotos+'</div></div>';
   }).join('');
 }
+
+// ===================== MODO TV / TELÃO (Full HD 1920x1080) =====================
+var tvTimer=null;
+var TV_CANDS=[
+  {k:'d',nome:'DITINHO',cor:'#1565c0'},
+  {k:'p',nome:'PAULO CÂMARA',cor:'#c62828'},
+  {k:'r',nome:'ROGÉRIO ANDRADE',cor:'#2e7d32'}
+];
+
+// Escala o palco 1920x1080 para caber em qualquer tela, mantendo a proporção 16:9
+function tvAplicar() {
+  if (!document.body.classList.contains('tv')) return;
+  var st=document.getElementById('tv-stage');
+  var k=Math.min(window.innerWidth/1920, window.innerHeight/1080);
+  st.style.transform='scale('+k+')';
+  st.style.left=((window.innerWidth-1920*k)/2)+'px';
+  st.style.top=((window.innerHeight-1080*k)/2)+'px';
+}
+
+function renderTV() {
+  var cardsEl=document.getElementById('tv-cards');
+  if (!cardsEl.children.length) {
+    // usa as mesmas fotos/nomes dos cards do Resumo
+    var origem=document.querySelectorAll('#pane-resumo .header .card');
+    cardsEl.innerHTML=TV_CANDS.map(function(c,i){
+      var img=origem[i]&&origem[i].querySelector('img');
+      var nome=origem[i]&&origem[i].querySelector('.card-label');
+      return '<div class="tv-card" style="--cor:'+c.cor+'">'
+        +'<div class="tv-foto">'+(img?'<img src="'+img.src+'" alt="" style="object-position:'+(img.classList.contains('contain-bottom')?'center bottom':'center top')+'">':'👤')+'</div>'
+        +'<div class="tv-card-body"><div class="tv-nome">'+(nome?nome.textContent:c.nome)+'</div>'
+        +'<div class="tv-votos" id="tv-v-'+c.k+'">0</div><div class="tv-pct" id="tv-p-'+c.k+'">0,0%</div></div></div>';
+    }).join('');
+    document.getElementById('tv-linhas').innerHTML=TV_CANDS.map(function(c){
+      return '<div class="tv-linha" style="--cor:'+c.cor+'"><div class="n" style="color:'+c.cor+';filter:brightness(1.6)">'+c.nome+'</div>'
+        +'<div class="tv-trilho"><div class="tv-fill" id="tv-f-'+c.k+'" style="width:0%"></div><span class="tv-fill-pct" id="tv-fp-'+c.k+'"></span></div>'
+        +'<div class="v" id="tv-u-'+c.k+'">0</div></div>';
+    }).join('');
+  }
+  // totais (cards) — mesmos números do Resumo
+  TV_CANDS.forEach(function(c){
+    document.getElementById('tv-v-'+c.k).textContent=document.getElementById('tot-'+c.k).textContent;
+    document.getElementById('tv-p-'+c.k).textContent=document.getElementById('pct-'+c.k).textContent;
+  });
+  document.getElementById('tv-base').textContent=document.getElementById('base-cards').textContent;
+  // última seção (barras)
+  var ult=DATA.regs[DATA.regs.length-1];
+  var u=ult||{d:0,p:0,r:0};
+  var pU=pctsSomando100([u.d,u.p,u.r]);
+  document.getElementById('tv-ult-tit').textContent=ult?'Última seção digitada · Zona '+ult.zona+' — Seção '+ult.sec:'Nenhuma seção digitada ainda';
+  TV_CANDS.forEach(function(c,i){
+    var pct=pU[i], larg=pct>0?Math.max(pct,1.5):0;
+    document.getElementById('tv-f-'+c.k).style.width=larg+'%';
+    var lp=document.getElementById('tv-fp-'+c.k);
+    lp.textContent=fmtPct(pct);
+    if (pct>=14) { lp.className='tv-fill-pct'; lp.style.left=''; lp.style.right=(100-larg)+'%'; lp.style.marginRight='14px'; lp.style.color='#fff'; }
+    else { lp.className='tv-fill-pct fora'; lp.style.right=''; lp.style.marginRight=''; lp.style.left='calc('+larg+'% + 14px)'; lp.style.color='#fff'; }
+    document.getElementById('tv-u-'+c.k).textContent=u[c.k].toLocaleString('pt-BR');
+  });
+  // seções apuradas
+  var ap=DATA.regs.length, tot=DATA.totalSec||1;
+  var pv=Math.min(100,ap/tot*100);
+  document.getElementById('tv-sec-big').innerHTML=ap.toLocaleString('pt-BR')+' <small>DE '+tot.toLocaleString('pt-BR')+'</small>';
+  document.getElementById('tv-sec-fill').style.width=(ap>0?Math.max(pv,1.5):0)+'%';
+  document.getElementById('tv-sec-a').textContent='APURADAS '+fmtPct(pv);
+  document.getElementById('tv-sec-f').textContent='FALTAM '+fmtPct(100-pv);
+  document.getElementById('tv-hora').textContent=new Date().toLocaleTimeString('pt-BR');
+}
+
+var tvTema=localStorage.getItem('vt_tv_tema')||'noite';
+function tvAplicarTema() {
+  document.getElementById('tv-wrap').classList.toggle('dia',tvTema==='dia');
+  // o botão mostra para qual tema vai trocar
+  document.getElementById('tv-tema').textContent=tvTema==='dia'?'🌙 Noite':'☀️ Dia';
+}
+function tvAlternarTema() {
+  tvTema=tvTema==='dia'?'noite':'dia';
+  localStorage.setItem('vt_tv_tema',tvTema);
+  tvAplicarTema(); tvMostrarBarra();
+}
+document.addEventListener('fullscreenchange',function(){
+  var b=document.getElementById('tv-fs');
+  if (b) b.textContent=document.fullscreenElement?'⛶ Sair da tela cheia':'⛶ Tela cheia';
+});
+
+function tvTelaCheia() {
+  var el=document.documentElement;
+  if (!document.fullscreenElement) { if (el.requestFullscreen) el.requestFullscreen().catch(function(){}); }
+  else if (document.exitFullscreen) document.exitFullscreen();
+}
+function tvMostrarBarra() {
+  var bar=document.getElementById('tv-bar');
+  bar.classList.remove('oculta');
+  clearTimeout(tvTimer);
+  tvTimer=setTimeout(function(){bar.classList.add('oculta')},4000);
+}
+function entrarModoTV() {
+  document.body.classList.add('tv');
+  tvAplicarTema(); renderTV(); tvAplicar();
+  if (!document.fullscreenElement) tvTelaCheia();
+  tvMostrarBarra();
+}
+function sairModoTV() {
+  document.body.classList.remove('tv');
+  if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen();
+  showTab('resumo');
+}
+window.addEventListener('resize',function(){ setTimeout(tvAplicar,100); });
+document.addEventListener('mousemove',function(){ if(document.body.classList.contains('tv')) tvMostrarBarra(); });
+document.addEventListener('click',function(){ if(document.body.classList.contains('tv')) tvMostrarBarra(); });
+document.addEventListener('keydown',function(e){
+  if (!document.body.classList.contains('tv')) return;
+  if (e.key==='f'||e.key==='F') tvTelaCheia();
+  else if (e.key==='t'||e.key==='T') tvAlternarTema();
+});
 
 // Abre direto se já houver sessão válida neste aparelho
 if (TOKEN) {

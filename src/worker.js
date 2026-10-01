@@ -149,6 +149,7 @@ async function onRequest(ctx) {
       const existe = await db.prepare('SELECT id FROM regs WHERE zona = ? AND sec = ?').bind(zona, sec).first();
       if (existe) return erro('Seção já registrada para essa zona.', 409);
       const fotos = Array.isArray(body.fotos) ? body.fotos.filter(f => typeof f === 'string' && f.startsWith('data:image/')) : [];
+      if (!fotos.length) return erro('Anexe pelo menos uma foto do comprovante.');
       if (fotos.some(f => f.length > 1800000)) return erro('Foto muito grande.', 413);
       const ins = await db.prepare(
         'INSERT INTO regs (zona, sec, d, p, r, por, criado) VALUES (?, ?, ?, ?, ?, ?, ?)'
