@@ -1,0 +1,16 @@
+{
+  "name": "contagem-votos",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "contagem_votos",
+      "database_id": "f1a1821e-2051-4f7b-956d-42a9743387d7"
+    }
+  ]
+}

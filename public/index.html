@@ -41,7 +41,7 @@ body.tv .app-screen{display:none!important}
 .tv-aovivo{display:inline-flex;align-items:center;gap:8px;color:#ff5252}
 .tv-aovivo i{width:14px;height:14px;border-radius:50%;background:#ff5252;animation:tvpisca 1.4s infinite}
 @keyframes tvpisca{50%{opacity:.25}}
-.tv-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;height:540px}
+.tv-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:32px;height:540px}
 .tv-card{background:#fff;border-radius:24px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 18px 50px rgba(0,0,0,.35);border-top:10px solid var(--cor)}
 .tv-foto{height:270px;background:#e8eaf6;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:150px}
 .tv-foto img{width:100%;height:100%;object-fit:cover;object-position:center top}
@@ -98,7 +98,7 @@ body.tv .tv-bar{display:flex}
 .tab-btn:hover:not(.active){background:#f5f5f5}
 .tab-pane{display:none}.tab-pane.active{display:block}
 
-.header{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:1rem}
+.header{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem}
 .card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;overflow:hidden;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.06)}
 .card-img-wrap{width:100%;height:120px;overflow:hidden;background:#eee}
 .card-img{width:100%;height:100%;display:block}
@@ -141,7 +141,7 @@ body.tv .tv-bar{display:flex}
 .form-box{background:#fff;border-radius:12px;border:1px solid #e0e0e0;padding:1.25rem;margin-bottom:1rem}
 .sec-title{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-.cand-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
+.cand-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
 .field{display:flex;flex-direction:column;gap:4px}
 .field label{font-size:11px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
 .field input,.field select{border-radius:8px;border:1.5px solid #ddd;padding:8px 10px;font-size:14px;background:#fafafa;color:#1a1a2e;width:100%;transition:.2s;text-transform:uppercase;font-weight:600}
@@ -252,14 +252,6 @@ body.tv .tv-bar{display:flex}
             <div class="card-pct" style="color:#c62828" id="pct-p">0%</div>
           </div>
         </div>
-        <div class="card">
-          <div class="card-img-ph">👤</div>
-          <div class="card-body">
-            <div class="card-label">ROGÉRIO ANDRADE</div>
-            <div class="card-value" id="tot-r">0</div>
-            <div class="card-pct" style="color:#2e7d32" id="pct-r">0%</div>
-          </div>
-        </div>
       </div>
       <div class="bar-section">
         <div class="base-calc" id="base-calc"></div>
@@ -270,19 +262,12 @@ body.tv .tv-bar{display:flex}
           </div>
           <div class="bar-track"><div class="bar-fill" id="bar-d" style="width:0%;background:#1565c0"><span class="bar-pct" id="bpct-d"></span></div></div>
         </div>
-        <div class="cand-row">
+        <div class="cand-row" style="margin-bottom:0">
           <div class="cand-header">
             <div class="cand-name"><span class="dot" style="background:#c62828"></span>PAULO CÂMARA</div>
             <span style="font-size:12px;color:#c62828;font-weight:700;text-transform:uppercase" id="lbl-p">0 VOTOS</span>
           </div>
           <div class="bar-track"><div class="bar-fill" id="bar-p" style="width:0%;background:#c62828"><span class="bar-pct" id="bpct-p"></span></div></div>
-        </div>
-        <div class="cand-row" style="margin-bottom:0">
-          <div class="cand-header">
-            <div class="cand-name"><span class="dot" style="background:#2e7d32"></span>ROGÉRIO ANDRADE</div>
-            <span style="font-size:12px;color:#2e7d32;font-weight:700;text-transform:uppercase" id="lbl-r">0 VOTOS</span>
-          </div>
-          <div class="bar-track"><div class="bar-fill" id="bar-r" style="width:0%;background:#2e7d32"><span class="bar-pct" id="bpct-r"></span></div></div>
         </div>
       </div>
       <div class="secoes-box">
@@ -321,7 +306,6 @@ body.tv .tv-bar{display:flex}
         <div class="cand-grid">
           <div class="field"><label style="color:#1565c0">Ditinho</label><input type="number" id="in-d" placeholder="0" min="0" style="text-transform:none"></div>
           <div class="field"><label style="color:#c62828">Paulo Câmara</label><input type="number" id="in-p" placeholder="0" min="0" style="text-transform:none"></div>
-          <div class="field"><label style="color:#2e7d32">Rogério Andrade</label><input type="number" id="in-r" placeholder="0" min="0" style="text-transform:none"></div>
         </div>
         <div class="sec-title">Fotos do comprovante <span style="color:#c62828">* obrigatório</span></div>
         <div class="foto-row">
@@ -349,6 +333,7 @@ body.tv .tv-bar{display:flex}
         <div class="form-grid">
           <div class="field"><label>Nº de seções</label><input type="number" id="cfg-secoes" min="1" placeholder="Ex: 245"></div>
           <div class="field"><label>Qtd. de eleitores</label><input type="text" inputmode="numeric" id="cfg-eleitores" placeholder="Ex: 100.000" oninput="mascaraMilhar(this)"></div>
+          <div class="field"><label>Mostrar porcentagem</label><select id="cfg-mostrar-pct"><option value="0">Não mostrar</option><option value="1">Mostrar</option></select></div>
         </div>
         <button class="btn-salvar" onclick="salvarConfig()">✓ Salvar configuração</button>
         <div class="err" id="err-cfg"></div>
@@ -676,7 +661,7 @@ function addReg() {
   var sec=document.getElementById('in-sec').value.trim().toUpperCase();
   var d=parseInt(document.getElementById('in-d').value)||0;
   var p=parseInt(document.getElementById('in-p').value)||0;
-  var r=parseInt(document.getElementById('in-r').value)||0;
+  var r=0;
   if (!zona||!sec) {showMsg('err-msg','INFORME A ZONA E A SEÇÃO.');return;}
   if (!formFotos.length) {
     showMsg('err-msg','ANEXE PELO MENOS UMA FOTO DO COMPROVANTE PARA SALVAR.');
@@ -694,7 +679,6 @@ function addReg() {
       document.getElementById('in-sec').value='';
       document.getElementById('in-d').value='';
       document.getElementById('in-p').value='';
-      document.getElementById('in-r').value='';
       formFotos=[]; renderFormFotos();
       showMsg('ok-msg','SEÇÃO SALVA COM SUCESSO!');
       return carregarEstado(true);
@@ -747,6 +731,7 @@ function mascaraMilhar(el) {
 function carregarConfig() {
   document.getElementById('cfg-secoes').value=DATA.totalSec;
   document.getElementById('cfg-eleitores').value=DATA.totalEleitores?DATA.totalEleitores.toLocaleString('pt-BR'):'';
+  document.getElementById('cfg-mostrar-pct').value=DATA.mostrarPct?'1':'0';
 }
 
 function salvarConfig() {
@@ -754,8 +739,9 @@ function salvarConfig() {
   err.style.display='none';ok.style.display='none';
   var sec=parseInt(document.getElementById('cfg-secoes').value);
   var ele=parseInt(document.getElementById('cfg-eleitores').value.replace(/\D/g,''))||0;
+  var mostrarPct=document.getElementById('cfg-mostrar-pct').value==='1'?1:0;
   if (!(sec>0)) {err.textContent='INFORME O NÚMERO DE SEÇÕES';err.style.display='block';return;}
-  api('PUT','config',{totalSec:sec,totalEleitores:ele}).then(function() {
+  api('PUT','config',{totalSec:sec,totalEleitores:ele,mostrarPct:mostrarPct}).then(function() {
     ok.textContent='CONFIGURAÇÃO SALVA';ok.style.display='block';
     setTimeout(function(){ok.style.display='none'},2500);
     return carregarEstado(true);
@@ -787,6 +773,7 @@ function setBar(barId,lpctId,pct) {
   bar.style.width=larg+'%';
   bar.style.paddingRight=larg?'':'0'; // sem votos: barra some por completo
   lbl.textContent=fmtPct(pct);
+  lbl.style.display=DATA.mostrarPct?'':'none'; // porcentagem na barra só se o admin escolher "Mostrar"
   if (pct>=12) {
     lbl.className='bar-pct';lbl.style.left='';lbl.style.color='';
   } else {
@@ -817,32 +804,32 @@ function renderSecBar() {
 function renderAll() {
   var totD=DATA.regs.reduce(function(a,x){return a+x.d},0);
   var totP=DATA.regs.reduce(function(a,x){return a+x.p},0);
-  var totR=DATA.regs.reduce(function(a,x){return a+x.r},0);
-  var totAll=totD+totP+totR||1;
-  var ele=DATA.totalEleitores||0, pD,pP,pR;
+  var totAll=totD+totP||1;
+  var ele=DATA.totalEleitores||0, pD,pP;
   var bcc=document.getElementById('base-cards');
   if (ele>0) {
     // % de cada candidato sobre o total de eleitores
-    pD=totD/ele*100; pP=totP/ele*100; pR=totR/ele*100;
+    pD=totD/ele*100; pP=totP/ele*100;
     bcc.textContent='% SOBRE '+ele.toLocaleString('pt-BR')+' ELEITORES';
   } else {
-    var pcts=pctsSomando100([totD,totP,totR]);
-    pD=pcts[0];pP=pcts[1];pR=pcts[2];
+    var pcts=pctsSomando100([totD,totP]);
+    pD=pcts[0];pP=pcts[1];
     bcc.textContent='% SOBRE VOTOS APURADOS — DEFINA OS ELEITORES NO ADMIN';
   }
   document.getElementById('tot-d').textContent=totD.toLocaleString('pt-BR');
   document.getElementById('tot-p').textContent=totP.toLocaleString('pt-BR');
-  document.getElementById('tot-r').textContent=totR.toLocaleString('pt-BR');
   document.getElementById('pct-d').textContent=fmtPct(pD);
   document.getElementById('pct-p').textContent=fmtPct(pP);
-  document.getElementById('pct-r').textContent=fmtPct(pR);
+  // porcentagem nos cards: só aparece se o admin escolher "Mostrar"
+  var mostrarPct=!!DATA.mostrarPct;
+  ['pct-d','pct-p','base-cards'].forEach(function(id){ document.getElementById(id).style.display=mostrarPct?'':'none'; });
   document.getElementById('badge-count').textContent=DATA.regs.length;
   var bc=document.getElementById('base-calc');
   var ult=DATA.regs[DATA.regs.length-1];
-  var u=ult||{d:0,p:0,r:0};
-  var pU=pctsSomando100([u.d,u.p,u.r]);
+  var u=ult||{d:0,p:0};
+  var pU=pctsSomando100([u.d,u.p]);
   bc.textContent=ult?'ÚLTIMA SEÇÃO DIGITADA: ZONA '+ult.zona+' — SEÇÃO '+ult.sec:'NENHUMA SEÇÃO DIGITADA AINDA';
-  [['d',u.d,pU[0]],['p',u.p,pU[1]],['r',u.r,pU[2]]].forEach(function(c){
+  [['d',u.d,pU[0]],['p',u.p,pU[1]]].forEach(function(c){
     document.getElementById('lbl-'+c[0]).textContent=c[1].toLocaleString('pt-BR')+' VOTOS';
     setBar('bar-'+c[0],'bpct-'+c[0],c[2]);
   });
@@ -863,7 +850,6 @@ function renderAll() {
       +'<div class="sec-votos">'
       +'<span style="color:#1565c0">'+x.d+'D</span>'
       +'<span style="color:#c62828">'+x.p+'P</span>'
-      +'<span style="color:#2e7d32">'+x.r+'R</span>'
       +'</div>'
       +(isAdmin?'<button class="btn-del" onclick="event.stopPropagation();delReg('+x.id+')">🗑</button>':'')
       +'</div></div>'
@@ -871,7 +857,6 @@ function renderAll() {
       +'<div style="display:flex;gap:16px;font-size:12px;padding-top:10px;margin-bottom:8px;flex-wrap:wrap">'
       +'<span style="color:#1565c0;font-weight:700">DITINHO: '+x.d+' VOTOS</span>'
       +'<span style="color:#c62828;font-weight:700">PAULO CÂMARA: '+x.p+' VOTOS</span>'
-      +'<span style="color:#2e7d32;font-weight:700">ROGÉRIO ANDRADE: '+x.r+' VOTOS</span>'
       +'</div>'+fotos+'</div></div>';
   }).join('');
 }
@@ -880,8 +865,7 @@ function renderAll() {
 var tvTimer=null;
 var TV_CANDS=[
   {k:'d',nome:'DITINHO',cor:'#1565c0'},
-  {k:'p',nome:'PAULO CÂMARA',cor:'#c62828'},
-  {k:'r',nome:'ROGÉRIO ANDRADE',cor:'#2e7d32'}
+  {k:'p',nome:'PAULO CÂMARA',cor:'#c62828'}
 ];
 
 // Escala o palco 1920x1080 para caber em qualquer tela, mantendo a proporção 16:9
@@ -919,16 +903,20 @@ function renderTV() {
     document.getElementById('tv-p-'+c.k).textContent=document.getElementById('pct-'+c.k).textContent;
   });
   document.getElementById('tv-base').textContent=document.getElementById('base-cards').textContent;
+  var mostrarPctTV=!!DATA.mostrarPct;
+  document.getElementById('tv-base').style.display=mostrarPctTV?'':'none';
+  TV_CANDS.forEach(function(c){ document.getElementById('tv-p-'+c.k).style.display=mostrarPctTV?'':'none'; });
   // última seção (barras)
   var ult=DATA.regs[DATA.regs.length-1];
-  var u=ult||{d:0,p:0,r:0};
-  var pU=pctsSomando100([u.d,u.p,u.r]);
+  var u=ult||{d:0,p:0};
+  var pU=pctsSomando100([u.d,u.p]);
   document.getElementById('tv-ult-tit').textContent=ult?'Última seção digitada · Zona '+ult.zona+' — Seção '+ult.sec:'Nenhuma seção digitada ainda';
   TV_CANDS.forEach(function(c,i){
     var pct=pU[i], larg=pct>0?Math.max(pct,1.5):0;
     document.getElementById('tv-f-'+c.k).style.width=larg+'%';
     var lp=document.getElementById('tv-fp-'+c.k);
     lp.textContent=fmtPct(pct);
+    lp.style.display=DATA.mostrarPct?'':'none';
     if (pct>=14) { lp.className='tv-fill-pct'; lp.style.left=''; lp.style.right=(100-larg)+'%'; lp.style.marginRight='14px'; lp.style.color='#fff'; }
     else { lp.className='tv-fill-pct fora'; lp.style.right=''; lp.style.marginRight=''; lp.style.left='calc('+larg+'% + 14px)'; lp.style.color='#fff'; }
     document.getElementById('tv-u-'+c.k).textContent=u[c.k].toLocaleString('pt-BR');
