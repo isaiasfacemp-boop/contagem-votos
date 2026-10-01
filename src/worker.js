@@ -55,6 +55,16 @@ async function salvarZonas(db, lista, extras = []) {
   ]);
 }
 
+// toda exclusão exige a senha do admin que está conectado (cabeçalho X-Senha)
+async function senhaAdminOk(req, db, me) {
+  let senha = req.headers.get("X-Senha") || "";
+  try { senha = decodeURIComponent(senha); } catch {}
+  if (!senha) return false;
+  const u = await db.prepare("SELECT salt, hash FROM users WHERE id = ?").bind(me.id).first();
+  return !!u && await hashSenha(senha, u.salt) === u.hash;
+}
+const SENHA_ERRADA = "Senha incorreta. Nada foi excluído.";
+
 function publicUser(u) {
   return { id: u.id, user: u.user, role: u.role, acessos: JSON.parse(u.acessos) };
 }
@@ -188,6 +198,7 @@ async function onRequest(ctx) {
         return json({ ok: true });
       }
       if (metodo === "DELETE" && id) {
+        if (!await senhaAdminOk(request, db, me)) return erro(SENHA_ERRADA, 403);
         const usadas = await db.prepare("SELECT COUNT(*) AS n FROM regs WHERE zona = ?").bind(alvo).first();
         if (usadas && usadas.n > 0) return erro(`A zona ${alvo} tem ${usadas.n} seção(ões) digitada(s). Exclua as seções antes.`, 409);
         const resto = zonas.filter((x) => x !== alvo);
@@ -220,6 +231,7 @@ async function onRequest(ctx) {
     }
     if (rota === "regs" && metodo === "DELETE" && id) {
       if (!isAdmin) return erro("Sem permissão.", 403);
+      if (!await senhaAdminOk(request, db, me)) return erro(SENHA_ERRADA, 403);
       await db.batch([
         db.prepare("DELETE FROM fotos WHERE reg_id = ?").bind(id),
         db.prepare("DELETE FROM regs WHERE id = ?").bind(id),
@@ -271,6 +283,7 @@ async function onRequest(ctx) {
         return json({ ok: true });
       }
       if (metodo === "DELETE" && id) {
+        if (!await senhaAdminOk(request, db, me)) return erro(SENHA_ERRADA, 403);
         if (Number(id) === 1) return erro("O administrador principal não pode ser excluído.", 403);
         await db.batch([
           db.prepare("DELETE FROM sessions WHERE user_id = ?").bind(id),

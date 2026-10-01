@@ -225,6 +225,10 @@ body.tv .tv-bar{display:flex}
 .app-dlg .tit{font-size:16px;font-weight:800;color:#1a1a2e;text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px}
 .app-dlg .txt{font-size:13px;color:#555;line-height:1.5;white-space:pre-line;margin-bottom:18px;text-transform:uppercase;font-weight:600}
 .app-dlg .bts{display:flex;gap:10px}
+.app-dlg .senha-lbl{display:block;text-align:left;font-size:11px;font-weight:800;color:#555;text-transform:uppercase;letter-spacing:.05em;margin:-6px 0 6px}
+.app-dlg .senha{width:100%;border-radius:10px;border:1.5px solid #ddd;padding:11px 12px;font-size:15px;background:#fafafa;margin-bottom:6px}
+.app-dlg .senha:focus{outline:none;border-color:#c62828;background:#fff}
+.app-dlg .senha-err{color:#c62828;font-size:12px;font-weight:700;min-height:16px;margin-bottom:10px;text-align:left}
 .app-dlg button{flex:1;padding:12px;border-radius:10px;border:none;font-size:13px;font-weight:800;cursor:pointer;text-transform:uppercase;letter-spacing:.04em}
 .app-dlg .nao{background:#eef1f5;color:#555}
 .app-dlg .sim{background:#1565c0;color:#fff}
@@ -529,6 +533,32 @@ function appDialogo(tit, txt, botaoOk, perigo, comCancelar){
   });
 }
 function appConfirm(tit, txt, botaoOk, perigo){ return appDialogo(tit, txt, botaoOk||'OK', perigo, true); }
+// pede a senha do admin conectado; executar(senha) devolve uma Promise (erro = senha errada ou outro problema)
+function excluirComSenha(tit, txt, executar){
+  var f=document.createElement('div'); f.className='app-dlg-fundo';
+  f.innerHTML='<div class="app-dlg" role="dialog"><div class="ic">🔒</div><div class="tit"></div><div class="txt"></div>'
+    +'<label class="senha-lbl">Digite sua senha de admin para confirmar</label>'
+    +'<input type="password" class="senha" autocomplete="current-password" placeholder="Sua senha">'
+    +'<div class="senha-err"></div>'
+    +'<div class="bts"><button class="nao">Cancelar</button><button class="sim perigo">Excluir</button></div></div>';
+  f.querySelector('.tit').textContent=tit; f.querySelector('.txt').textContent=txt;
+  var inp=f.querySelector('.senha'), err=f.querySelector('.senha-err'), bt=f.querySelector('.sim');
+  function fechar(){ f.classList.remove('on'); setTimeout(function(){f.remove()},150); }
+  function confirmar(){
+    var senha=inp.value;
+    if (!senha) { err.textContent='DIGITE A SENHA.'; inp.focus(); return; }
+    bt.disabled=true; bt.textContent='EXCLUINDO...'; err.textContent='';
+    executar(senha).then(fechar).catch(function(e){
+      bt.disabled=false; bt.textContent='Excluir';
+      err.textContent=(e&&e.message)||'ERRO AO EXCLUIR.'; inp.value=''; inp.focus();
+    });
+  }
+  bt.onclick=confirmar;
+  f.querySelector('.nao').onclick=fechar;
+  inp.addEventListener('keydown',function(e){ if(e.key==='Enter') confirmar(); else if(e.key==='Escape') fechar(); });
+  f.addEventListener('click',function(e){ if(e.target===f) fechar(); });
+  document.body.appendChild(f); requestAnimationFrame(function(){f.classList.add('on')}); inp.focus();
+}
 function appAlert(txt){ return appDialogo('Atenção', txt, 'OK', false, false); }
 
 // ===================== INSTALAR COMO APLICATIVO =====================
@@ -566,9 +596,10 @@ var pollTimer = null;
 var abertos = {};      // seções expandidas na lista
 var cacheFotos = {};   // fotos já baixadas por seção
 
-function api(metodo, rota, dados) {
+function api(metodo, rota, dados, senha) {
   var op = { method: metodo, headers: {} };
   if (TOKEN) op.headers['Authorization'] = 'Bearer ' + TOKEN;
+  if (senha) op.headers['X-Senha'] = encodeURIComponent(senha);
   if (dados !== undefined) { op.headers['Content-Type'] = 'application/json'; op.body = JSON.stringify(dados); }
   return fetch('/api/' + rota, op).then(function(r) {
     return r.json().catch(function(){ return {}; }).then(function(j) {
@@ -742,10 +773,8 @@ function cancelarEdicao() {
 
 function excluirUsuario(id) {
   var u=(DATA.users||[]).filter(function(x){return x.id===id})[0];
-  appConfirm('Excluir usuário', 'EXCLUIR O USUÁRIO '+(u?u.user:'')+'?', 'Excluir', true).then(function(ok){
-    if (!ok) return;
-    api('DELETE','users/'+id).then(function(){ return carregarEstado(true); })
-      .catch(function(e){ appAlert(e.message); });
+  excluirComSenha('Excluir usuário', 'EXCLUIR O USUÁRIO '+(u?u.user:'')+'?', function(senha){
+    return api('DELETE','users/'+id,undefined,senha).then(function(){ carregarEstado(true); });
   });
 }
 
@@ -863,10 +892,8 @@ function cancelarZona(){
   document.getElementById('zona-form-title').textContent='Zonas';
 }
 function excluirZona(z){
-  appConfirm('Excluir zona', 'EXCLUIR A '+rotZona(z)+' ZONA?', 'Excluir', true).then(function(ok){
-    if (!ok) return;
-    api('DELETE','zonas/'+encodeURIComponent(z)).then(function(){ if(zonaEditando===z) cancelarZona(); return carregarEstado(true); })
-      .catch(function(e){ showMsg('err-zona',e.message); });
+  excluirComSenha('Excluir zona', 'EXCLUIR A '+rotZona(z)+' ZONA?', function(senha){
+    return api('DELETE','zonas/'+encodeURIComponent(z),undefined,senha).then(function(){ if(zonaEditando===z) cancelarZona(); carregarEstado(true); });
   });
 }
 function escolherZona(z){
@@ -934,10 +961,8 @@ function addReg() {
 
 function delReg(id) {
   var r=DATA.regs.filter(function(x){return x.id===id})[0];
-  appConfirm('Excluir seção', r?'EXCLUIR A SEÇÃO '+r.sec+' (ZONA '+r.zona+')?\nELA FICA LIVRE PARA SER DIGITADA DE NOVO.':'EXCLUIR ESTE REGISTRO?', 'Excluir', true).then(function(ok){
-    if (!ok) return;
-    api('DELETE','regs/'+id).then(function(){ delete cacheFotos[id]; delete abertos[id]; return carregarEstado(true); })
-      .catch(function(e){ appAlert(e.message); });
+  excluirComSenha('Excluir seção', r?'EXCLUIR A SEÇÃO '+r.sec+' (ZONA '+r.zona+')?\nELA FICA LIVRE PARA SER DIGITADA DE NOVO.':'EXCLUIR ESTE REGISTRO?', function(senha){
+    return api('DELETE','regs/'+id,undefined,senha).then(function(){ delete cacheFotos[id]; delete abertos[id]; carregarEstado(true); });
   });
 }
 
