@@ -37,6 +37,24 @@ function novoToken() {
 const SQL_VERSAO = `INSERT INTO config (k, v) VALUES ('versao', '1')
   ON CONFLICT(k) DO UPDATE SET v = CAST(v AS INTEGER) + 1`;
 
+const ZONAS_PADRAO = ["56", "202"];
+function normZona(v) {
+  return String(v || "").replace(/[ªº°]/g, "").replace(/ZONA/gi, "").trim().toUpperCase().slice(0, 10);
+}
+async function lerZonas(db) {
+  const r = await db.prepare("SELECT v FROM config WHERE k = 'zonas'").first();
+  if (!r) return [...ZONAS_PADRAO];
+  try { return JSON.parse(r.v); } catch { return [...ZONAS_PADRAO]; }
+}
+async function salvarZonas(db, lista, extras = []) {
+  const ordenada = [...lista].sort((a, b) => (parseInt(a, 10) || 0) - (parseInt(b, 10) || 0) || a.localeCompare(b));
+  await db.batch([
+    db.prepare("INSERT OR REPLACE INTO config (k, v) VALUES ('zonas', ?)").bind(JSON.stringify(ordenada)),
+    ...extras,
+    db.prepare(SQL_VERSAO)
+  ]);
+}
+
 function publicUser(u) {
   return { id: u.id, user: u.user, role: u.role, acessos: JSON.parse(u.acessos) };
 }
@@ -113,13 +131,17 @@ async function onRequest(ctx) {
         db.prepare("SELECT id, user, role, acessos FROM users ORDER BY id")
       ]);
       const config = {};
+      let zonas = ZONAS_PADRAO;
       cfg.results.forEach((x) => {
-        config[x.k] = Number(x.v);
+        if (x.k === "zonas") {
+          try { zonas = JSON.parse(x.v); } catch {}
+        } else config[x.k] = Number(x.v);
       });
       return json({
         totalSec: config.totalSec || 0,
         totalEleitores: config.totalEleitores || 0,
         mostrarPct: config.mostrarPct ? 1 : 0,
+        zonas,
         versao: config.versao || 0,
         regs: regs.results,
         users: isAdmin ? users.results.map(publicUser) : []
@@ -140,14 +162,47 @@ async function onRequest(ctx) {
       ]);
       return json({ ok: true });
     }
+    // ---------- ZONAS (lista guardada na tabela config, chave "zonas") ----------
+    if (rota === "zonas") {
+      if (!isAdmin) return erro("Sem permissão.", 403);
+      const zonas = await lerZonas(db);
+      const alvo = id ? normZona(decodeURIComponent(id)) : "";
+      if (metodo === "POST" && !id) {
+        const z = normZona(body.zona);
+        if (!z) return erro("Digite o número da zona.");
+        if (zonas.includes(z)) return erro("Essa zona já existe.", 409);
+        await salvarZonas(db, [...zonas, z]);
+        return json({ ok: true });
+      }
+      if (metodo === "PUT" && id) {
+        const z = normZona(body.zona);
+        if (!z) return erro("Digite o número da zona.");
+        if (!zonas.includes(alvo)) return erro("Zona não encontrada.", 404);
+        if (z !== alvo && zonas.includes(z)) return erro("Essa zona já existe.", 409);
+        // renomeia também nas seções já digitadas
+        await salvarZonas(db, zonas.map((x) => (x === alvo ? z : x)), [
+          db.prepare("UPDATE regs SET zona = ? WHERE zona = ?").bind(z, alvo)
+        ]);
+        return json({ ok: true });
+      }
+      if (metodo === "DELETE" && id) {
+        const usadas = await db.prepare("SELECT COUNT(*) AS n FROM regs WHERE zona = ?").bind(alvo).first();
+        if (usadas && usadas.n > 0) return erro(`A zona ${alvo} tem ${usadas.n} seção(ões) digitada(s). Exclua as seções antes.`, 409);
+        const resto = zonas.filter((x) => x !== alvo);
+        if (!resto.length) return erro("Precisa ter pelo menos uma zona.");
+        await salvarZonas(db, resto);
+        return json({ ok: true });
+      }
+    }
     if (rota === "regs" && metodo === "POST" && !id) {
       if (!me.acessos.includes("registro")) return erro("Sem permissão para registrar.", 403);
       const zona = String(body.zona || "").trim().toUpperCase();
       const sec = String(body.sec || "").trim().toUpperCase();
       const n = (v) => Math.max(0, parseInt(v, 10) || 0);
       if (!zona || !sec) return erro("Informe a zona e a seção.");
-      const existe = await db.prepare("SELECT id FROM regs WHERE zona = ? AND sec = ?").bind(zona, sec).first();
-      if (existe) return erro("Seção já registrada para essa zona.", 409);
+      // seção é número único: 100, 0100 e 00100 são a mesma seção
+      const existe = await db.prepare("SELECT id, zona, sec FROM regs WHERE LTRIM(sec, '0') = LTRIM(?, '0')").bind(sec).first();
+      if (existe) return erro(`Seção ${existe.sec} já foi digitada (zona ${existe.zona}). Não pode repetir.`, 409);
       const fotos = Array.isArray(body.fotos) ? body.fotos.filter((f) => typeof f === "string" && f.startsWith("data:image/")) : [];
       if (!fotos.length) return erro("Anexe pelo menos uma foto do comprovante.");
       if (fotos.some((f) => f.length > 18e5)) return erro("Foto muito grande.", 413);

@@ -63,6 +63,9 @@ body.tv .app-screen{display:none!important}
 .tv-baixo{flex:1;display:grid;grid-template-columns:1.85fr 1fr;gap:32px;min-height:0}
 .tv-painel{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:22px 30px;display:flex;flex-direction:column;justify-content:center;gap:14px}
 .tv-painel-tit{font-size:22px;font-weight:800;color:#9fb0e0;text-transform:uppercase;letter-spacing:.08em}
+.tv-painel-ult{justify-content:flex-start;padding-top:20px}
+.tv-painel-ult .tv-painel-tit{text-align:center;font-size:26px}
+#tv-linhas{flex:1;display:flex;flex-direction:column;justify-content:center;gap:44px}
 .tv-linha{display:grid;grid-template-columns:380px 1fr 170px;align-items:center;gap:20px}
 .tv-linha .n{font-size:28px;font-weight:800;text-transform:uppercase;white-space:nowrap}
 .tv-linha .v{font-size:30px;font-weight:800;text-align:right}
@@ -181,6 +184,16 @@ body.tv .tv-bar{display:flex}
 .del-btn{position:absolute;top:2px;right:2px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .btn-salvar{width:100%;padding:11px;border-radius:8px;border:none;background:#1565c0;color:#fff;font-size:13px;font-weight:700;cursor:pointer;transition:.2s;text-transform:uppercase;letter-spacing:.05em}
 .btn-salvar:hover{background:#1040a0}
+.zona-opcoes{display:grid;grid-template-columns:repeat(auto-fit,minmax(64px,1fr));gap:6px}
+.zona-add{display:flex;gap:8px}
+.zona-add input{flex:1;min-width:0;border-radius:8px;border:1.5px solid #ddd;padding:9px 10px;font-size:14px;background:#fafafa;font-weight:600;text-transform:uppercase}
+.zona-add input:focus{outline:none;border-color:#1565c0;background:#fff}
+.btn-zona-ok{border:none;border-radius:8px;background:#1565c0;color:#fff;font-weight:700;font-size:12px;padding:0 14px;cursor:pointer;text-transform:uppercase;white-space:nowrap}
+.btn-zona-cancel{border:1px solid #ddd;border-radius:8px;background:#fff;color:#777;font-weight:700;font-size:12px;padding:0 12px;cursor:pointer;text-transform:uppercase}
+.zona-btn{padding:8px 4px;border:1.5px solid #ddd;border-radius:8px;background:#fafafa;font-weight:800;font-size:14px;color:#555;cursor:pointer;transition:.15s}
+.zona-btn:hover{border-color:#1565c0}
+.zona-btn.sel{background:#1565c0;border-color:#1565c0;color:#fff}
+.zona-opcoes.falta .zona-btn{border-color:#c62828;background:#ffebee}
 .err{color:#c62828;font-size:12px;margin-top:8px;display:none;padding:6px 10px;background:#ffebee;border-radius:6px;text-transform:uppercase;font-weight:600}
 .ok{color:#2e7d32;font-size:12px;margin-top:8px;display:none;padding:6px 10px;background:#e8f5e9;border-radius:6px;text-transform:uppercase;font-weight:600}
 
@@ -322,9 +335,10 @@ body.tv .tv-bar{display:flex}
       <div class="form-box">
         <div class="sec-title">Dados da seção</div>
         <div class="form-grid">
-          <div class="field"><label>Zona</label><input type="text" id="in-zona" placeholder="Ex: 001"></div>
-          <div class="field"><label>Seção</label><input type="text" id="in-sec" placeholder="Ex: 0042"></div>
+          <div class="field"><label>Zona</label><input type="hidden" id="in-zona"><div class="zona-opcoes" id="zona-opcoes"></div></div>
+          <div class="field"><label>Seção</label><input type="text" id="in-sec" placeholder="Ex: 0042" oninput="checarSecao()"></div>
         </div>
+        <div class="err" id="sec-dup" style="margin:-6px 0 14px"></div>
         <div class="sec-title">Votos por candidato</div>
         <div class="cand-grid">
           <div class="field"><label style="color:#1565c0">Ditinho</label><input type="number" id="in-d" placeholder="0" min="0" style="text-transform:none"></div>
@@ -361,6 +375,17 @@ body.tv .tv-bar{display:flex}
         <button class="btn-salvar" onclick="salvarConfig()">✓ Salvar configuração</button>
         <div class="err" id="err-cfg"></div>
         <div class="ok" id="ok-cfg"></div>
+      </div>
+      <div class="form-box">
+        <div class="sec-title" id="zona-form-title">Zonas</div>
+        <div class="zona-add">
+          <input type="text" id="zona-nome" placeholder="Nº da zona — Ex: 120" maxlength="10" onkeydown="if(event.key==='Enter')salvarZona()">
+          <button class="btn-zona-ok" id="btn-zona-ok" onclick="salvarZona()">+ Adicionar</button>
+          <button class="btn-zona-cancel" id="btn-zona-cancel" onclick="cancelarZona()" style="display:none">Cancelar</button>
+        </div>
+        <div class="err" id="err-zona"></div>
+        <div class="ok" id="ok-zona"></div>
+        <div class="user-list" id="zona-list" style="margin:12px 0 0"></div>
       </div>
       <div class="form-box">
         <div class="sec-title" id="admin-form-title">Novo usuário</div>
@@ -402,9 +427,9 @@ body.tv .tv-bar{display:flex}
   <div class="tv-cards" id="tv-cards"></div>
   <div class="tv-base" id="tv-base"></div>
   <div class="tv-baixo">
-    <div class="tv-painel">
+    <div class="tv-painel tv-painel-ult">
       <div class="tv-painel-tit" id="tv-ult-tit">Última seção digitada</div>
-      <div id="tv-linhas" style="display:flex;flex-direction:column;gap:16px"></div>
+      <div id="tv-linhas"></div>
     </div>
     <div class="tv-painel">
       <div class="tv-painel-tit">Seções apuradas</div>
@@ -461,7 +486,9 @@ function carregarEstado(forcar) {
     ultimoEstado = assinatura;
     ultimaVersao = s.versao;
     DATA = s;
+    renderZonas();
     renderAll();
+    checarSecao();
     if (document.body.classList.contains('tv')) renderTV();
   });
 }
@@ -685,6 +712,86 @@ function delFormFoto(id) {formFotos=formFotos.filter(function(x){return x.id!==i
 
 // ===================== SEÇÕES =====================
 var salvandoReg=false;
+// ===================== ZONAS (cadastradas no Admin) =====================
+function listaZonas(){ return (DATA.zonas&&DATA.zonas.length)?DATA.zonas:['56','202']; }
+function rotZona(z){ return /^\d+$/.test(z)?z+'ª':z; }
+function renderZonas(){
+  var atual=document.getElementById('in-zona').value;
+  var zs=listaZonas();
+  if (atual && zs.indexOf(atual)<0) { atual=''; document.getElementById('in-zona').value=''; }
+  document.getElementById('zona-opcoes').innerHTML=zs.map(function(z){
+    return '<button type="button" class="zona-btn'+(z===atual?' sel':'')+'" data-z="'+esc(z)+'" onclick="escolherZona(this.getAttribute(\'data-z\'))">'+esc(rotZona(z))+'</button>';
+  }).join('');
+  var lista=document.getElementById('zona-list'); if(!lista) return;
+  lista.innerHTML=zs.map(function(z){
+    var n=DATA.regs.filter(function(r){return r.zona===z}).length;
+    return '<div class="user-item"><div class="user-info"><div class="name">'+esc(rotZona(z))+' ZONA</div>'
+      +'<div class="meta">'+n+' SEÇ'+(n===1?'ÃO':'ÕES')+' DIGITADA'+(n===1?'':'S')+'</div></div>'
+      +'<div style="display:flex;align-items:center;gap:6px">'
+      +'<button class="btn-sm-edit" data-z="'+esc(z)+'" onclick="editarZona(this.getAttribute(\'data-z\'))">✏️</button>'
+      +'<button class="btn-sm" data-z="'+esc(z)+'" onclick="excluirZona(this.getAttribute(\'data-z\'))">🗑</button>'
+      +'</div></div>';
+  }).join('');
+}
+var zonaEditando=null;
+function normZona(v){ return String(v||'').replace(/[ªº°]/g,'').replace(/ZONA/ig,'').trim().toUpperCase(); }
+function salvarZona(){
+  var nova=normZona(document.getElementById('zona-nome').value);
+  if (!nova) { showMsg('err-zona','DIGITE O NÚMERO DA ZONA.'); return; }
+  var req=zonaEditando
+    ? api('PUT','zonas/'+encodeURIComponent(zonaEditando),{zona:nova})
+    : api('POST','zonas',{zona:nova});
+  var msg=zonaEditando?'ZONA ALTERADA':'ZONA ADICIONADA';
+  req.then(function(){ cancelarZona(); showMsg('ok-zona',msg); return carregarEstado(true); })
+     .catch(function(e){ showMsg('err-zona',e.message); });
+}
+function editarZona(z){
+  zonaEditando=z;
+  var inp=document.getElementById('zona-nome'); inp.value=z; inp.focus();
+  document.getElementById('btn-zona-ok').textContent='✓ Salvar';
+  document.getElementById('btn-zona-cancel').style.display='';
+  document.getElementById('zona-form-title').textContent='Zonas — editando a '+rotZona(z);
+}
+function cancelarZona(){
+  zonaEditando=null;
+  document.getElementById('zona-nome').value='';
+  document.getElementById('btn-zona-ok').textContent='+ Adicionar';
+  document.getElementById('btn-zona-cancel').style.display='none';
+  document.getElementById('zona-form-title').textContent='Zonas';
+}
+function excluirZona(z){
+  if (!confirm('EXCLUIR A '+rotZona(z)+' ZONA?')) return;
+  api('DELETE','zonas/'+encodeURIComponent(z)).then(function(){ if(zonaEditando===z) cancelarZona(); return carregarEstado(true); })
+    .catch(function(e){ showMsg('err-zona',e.message); });
+}
+function escolherZona(z){
+  document.getElementById('in-zona').value=z;
+  document.querySelectorAll('.zona-btn').forEach(function(b){ b.classList.toggle('sel', b.getAttribute('data-z')===z); });
+  document.getElementById('zona-opcoes').classList.remove('falta');
+}
+// seção é número único: 100, 0100 e 00100 são a mesma seção
+function normSec(v){ v=String(v||'').trim().toUpperCase(); return v.replace(/^0+(?=.)/,''); }
+function secaoExistente(sec){
+  var n=normSec(sec); if(!n) return null;
+  for (var i=0;i<DATA.regs.length;i++) if (normSec(DATA.regs[i].sec)===n) return DATA.regs[i];
+  return null;
+}
+// trava o salvar e avisa enquanto digita (e quando outra pessoa salvar a mesma seção)
+function checarSecao(){
+  var inp=document.getElementById('in-sec'); if(!inp) return null;
+  var aviso=document.getElementById('sec-dup');
+  var btn=document.querySelector('#pane-registro .btn-salvar');
+  var ja=secaoExistente(inp.value);
+  if (ja) {
+    aviso.textContent='⚠ SEÇÃO '+ja.sec+' JÁ FOI DIGITADA (ZONA '+ja.zona+', POR '+ja.por+'). NÃO PODE REPETIR.';
+    aviso.style.display='block'; inp.style.borderColor='#c62828'; inp.style.background='#ffebee';
+    if (!salvandoReg) { btn.disabled=true; btn.style.opacity='.5'; btn.style.cursor='not-allowed'; }
+  } else {
+    aviso.style.display='none'; inp.style.borderColor=''; inp.style.background='';
+    if (!salvandoReg) { btn.disabled=false; btn.style.opacity=''; btn.style.cursor=''; }
+  }
+  return ja;
+}
 function addReg() {
   if (salvandoReg) return;
   var zona=document.getElementById('in-zona').value.trim().toUpperCase();
@@ -692,7 +799,9 @@ function addReg() {
   var d=parseInt(document.getElementById('in-d').value)||0;
   var p=parseInt(document.getElementById('in-p').value)||0;
   var r=0;
-  if (!zona||!sec) {showMsg('err-msg','INFORME A ZONA E A SEÇÃO.');return;}
+  if (!zona) {showMsg('err-msg','MARQUE A ZONA.'); document.getElementById('zona-opcoes').classList.add('falta'); return;}
+  if (!sec) {showMsg('err-msg','INFORME A SEÇÃO.');return;}
+  if (checarSecao()) return;
   if (!formFotos.length) {
     showMsg('err-msg','ANEXE PELO MENOS UMA FOTO DO COMPROVANTE PARA SALVAR.');
     var drops=document.querySelectorAll('#pane-registro .foto-drop');
@@ -705,7 +814,6 @@ function addReg() {
   salvandoReg=true; btn.disabled=true; btn.textContent='SALVANDO...';
   api('POST','regs',{zona:zona,sec:sec,d:d,p:p,r:r,fotos:formFotos.map(function(f){return f.src})})
     .then(function() {
-      document.getElementById('in-zona').value='';
       document.getElementById('in-sec').value='';
       document.getElementById('in-d').value='';
       document.getElementById('in-p').value='';
@@ -714,7 +822,7 @@ function addReg() {
       return carregarEstado(true);
     })
     .catch(function(e){ showMsg('err-msg', e.message); })
-    .then(function(){ salvandoReg=false; btn.disabled=false; btn.textContent='✓ SALVAR SEÇÃO'; });
+    .then(function(){ salvandoReg=false; btn.disabled=false; btn.textContent='✓ SALVAR SEÇÃO'; checarSecao(); });
 }
 
 function delReg(id) {
