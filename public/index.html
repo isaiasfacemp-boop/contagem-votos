@@ -208,8 +208,21 @@ body.tv .tv-bar{display:flex}
 .sec-expand{display:none;padding:0 14px 12px;border-top:1px solid #f0f0f0}
 .sec-expand.open{display:block}
 .fotos-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-.foto-big{width:94px;height:78px;border-radius:6px;overflow:hidden;border:1px solid #ddd}
+.foto-big{position:relative;width:130px;height:150px;border-radius:8px;overflow:hidden;border:1px solid #ddd;cursor:zoom-in;background:#f5f5f5}
 .foto-big img{width:100%;height:100%;object-fit:cover;display:block}
+.foto-big .ver{position:absolute;left:0;right:0;bottom:0;background:rgba(21,101,192,.92);color:#fff;font-size:11px;font-weight:800;text-align:center;padding:6px 0;letter-spacing:.05em}
+.foto-big:hover{border-color:#1565c0}
+/* visualizador de comprovante */
+#visor{display:none;position:fixed;inset:0;z-index:2000;background:#05080f;touch-action:none;user-select:none}
+#visor.aberto{display:block}
+#visor-palco{position:absolute;inset:56px 0 0 0;overflow:hidden;display:flex;align-items:center;justify-content:center}
+#visor-img{max-width:100%;max-height:100%;transform-origin:center center;cursor:grab;will-change:transform}
+#visor-barra{position:absolute;top:0;left:0;right:0;height:56px;display:flex;align-items:center;gap:6px;padding:0 10px;background:rgba(0,0,0,.5)}
+#visor-barra .cont{color:#fff;font-weight:800;font-size:13px;flex:1;letter-spacing:.04em}
+#visor-barra button,#visor-barra a{background:rgba(255,255,255,.14);color:#fff;border:none;border-radius:8px;height:38px;min-width:40px;padding:0 10px;font-size:15px;font-weight:800;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+#visor-barra .fechar{background:#c62828}
+.visor-seta{position:absolute;top:50%;transform:translateY(-50%);width:48px;height:64px;border:none;border-radius:10px;background:rgba(0,0,0,.6);color:#fff;font-size:30px;box-shadow:0 0 0 1px rgba(255,255,255,.3);cursor:pointer;z-index:2}
+#visor-ant{left:8px}#visor-prox{right:8px}
 .no-foto{font-size:11px;color:#aaa;margin-top:8px;text-transform:uppercase;font-weight:600}
 .empty-state{text-align:center;color:#aaa;font-size:12px;padding:2.5rem;background:#fff;border-radius:12px;border:1px solid #e0e0e0;text-transform:uppercase;font-weight:600}
 .badge{font-size:11px;background:#e3f0ff;color:#1565c0;border-radius:4px;padding:2px 7px;font-weight:700;margin-left:5px}
@@ -836,7 +849,7 @@ function htmlFotos(id) {
   if (!f) return '<div class="no-foto">CARREGANDO FOTOS...</div>';
   if (!f.length) return '<div class="no-foto">NENHUMA FOTO ANEXADA</div>';
   return '<div style="font-size:11px;color:#888;margin-bottom:6px;text-transform:uppercase;font-weight:700">COMPROVANTES</div><div class="fotos-grid">'
-    +f.map(function(x){return '<div class="foto-big"><img src="'+x.src+'" alt="comprovante"></div>'}).join('')+'</div>';
+    +f.map(function(x,i){return '<div class="foto-big" onclick="event.stopPropagation();abrirVisor('+id+','+i+')"><img src="'+x.src+'" alt="comprovante"><div class="ver">🔍 VER</div></div>'}).join('')+'</div>';
 }
 
 function carregarFotos(id) {
@@ -1128,6 +1141,92 @@ if (TOKEN) {
   api('GET','me').then(function(r){ entrarNoApp(r.user); }).catch(function(){});
 }
 document.getElementById('l-user').addEventListener('keydown',function(e){ if(e.key==='Enter') doLogin(); });
+</script>
+<div id="visor">
+  <div id="visor-barra">
+    <span class="cont" id="visor-cont">COMPROVANTE</span>
+    <button onclick="visorZoom(-1)" title="Diminuir">−</button>
+    <button onclick="visorZoom(1)" title="Aumentar">+</button>
+    <button onclick="visorGirar()" title="Girar">⟳</button>
+    <a id="visor-baixar" download="comprovante.jpg" title="Baixar">⬇</a>
+    <button class="fechar" onclick="fecharVisor()" title="Fechar">✕</button>
+  </div>
+  <button class="visor-seta" id="visor-ant" onclick="visorIr(-1)">‹</button>
+  <button class="visor-seta" id="visor-prox" onclick="visorIr(1)">›</button>
+  <div id="visor-palco"><img id="visor-img" alt="comprovante"></div>
+</div>
+<script>
+// ===================== VISUALIZADOR DE COMPROVANTES =====================
+var vz={lista:[],i:0,esc:1,rot:0,x:0,y:0,nome:''};
+function abrirVisor(regId,i){
+  var f=cacheFotos[regId]||[]; if(!f.length) return;
+  var r=DATA.regs.filter(function(x){return x.id===regId})[0];
+  vz.lista=f; vz.i=i; vz.nome=r?('ZONA '+r.zona+' — SEÇÃO '+r.sec):'COMPROVANTE';
+  document.getElementById('visor').classList.add('aberto');
+  document.body.style.overflow='hidden';
+  visorMostrar();
+}
+function fecharVisor(){ document.getElementById('visor').classList.remove('aberto'); document.body.style.overflow=''; }
+function visorMostrar(){
+  var src=vz.lista[vz.i].src;
+  vz.esc=1; vz.rot=0; vz.x=0; vz.y=0;
+  document.getElementById('visor-img').src=src;
+  var bx=document.getElementById('visor-baixar'); bx.href=src; bx.download=vz.nome.replace(/[^A-Z0-9]+/gi,'_')+'_'+(vz.i+1)+'.jpg';
+  document.getElementById('visor-cont').textContent=vz.nome+(vz.lista.length>1?' · FOTO '+(vz.i+1)+' DE '+vz.lista.length:'');
+  var mais=vz.lista.length>1;
+  document.getElementById('visor-ant').style.display=mais?'':'none';
+  document.getElementById('visor-prox').style.display=mais?'':'none';
+  visorAplicar();
+}
+function visorAplicar(){
+  document.getElementById('visor-img').style.transform='translate('+vz.x+'px,'+vz.y+'px) scale('+vz.esc+') rotate('+vz.rot+'deg)';
+}
+function visorZoom(d){ vz.esc=Math.min(6,Math.max(1,vz.esc*(d>0?1.4:1/1.4))); if(vz.esc===1){vz.x=0;vz.y=0;} visorAplicar(); }
+function visorGirar(){ vz.rot=(vz.rot+90)%360; visorAplicar(); }
+function visorIr(d){ vz.i=(vz.i+d+vz.lista.length)%vz.lista.length; visorMostrar(); }
+document.addEventListener('keydown',function(e){
+  if(!document.getElementById('visor').classList.contains('aberto')) return;
+  if(e.key==='Escape') fecharVisor();
+  else if(e.key==='ArrowRight') visorIr(1);
+  else if(e.key==='ArrowLeft') visorIr(-1);
+  else if(e.key==='+'||e.key==='=') visorZoom(1);
+  else if(e.key==='-') visorZoom(-1);
+});
+(function(){
+  var palco=document.getElementById('visor-palco'), img=document.getElementById('visor-img');
+  // roda do mouse = zoom
+  palco.addEventListener('wheel',function(e){ e.preventDefault(); visorZoom(e.deltaY<0?1:-1); },{passive:false});
+  // duplo clique = aproxima / volta
+  img.addEventListener('dblclick',function(){ if(vz.esc>1){vz.esc=1;vz.x=0;vz.y=0;}else vz.esc=2.5; visorAplicar(); });
+  // clicar fora da foto fecha
+  palco.addEventListener('click',function(e){ if(e.target===palco) fecharVisor(); });
+  // arrastar (mouse e dedo) e pinça para zoom no celular
+  var arr=null, pin=null, toque=0;
+  function dist(t){ var a=t[0],b=t[1]; return Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY); }
+  img.addEventListener('mousedown',function(e){ e.preventDefault(); arr={x:e.clientX-vz.x,y:e.clientY-vz.y}; });
+  window.addEventListener('mousemove',function(e){ if(!arr||vz.esc===1) return; vz.x=e.clientX-arr.x; vz.y=e.clientY-arr.y; visorAplicar(); });
+  window.addEventListener('mouseup',function(){ arr=null; });
+  palco.addEventListener('touchstart',function(e){
+    if(e.touches.length===2){ pin={d:dist(e.touches),esc:vz.esc}; arr=null; }
+    else if(e.touches.length===1){
+      var t=e.touches[0], agora=Date.now();
+      if(agora-toque<300){ if(vz.esc>1){vz.esc=1;vz.x=0;vz.y=0;}else vz.esc=2.5; visorAplicar(); }
+      toque=agora; arr={x:t.clientX-vz.x,y:t.clientY-vz.y,sx:t.clientX};
+    }
+  },{passive:true});
+  palco.addEventListener('touchmove',function(e){
+    e.preventDefault();
+    if(pin&&e.touches.length===2){ vz.esc=Math.min(6,Math.max(1,pin.esc*dist(e.touches)/pin.d)); if(vz.esc===1){vz.x=0;vz.y=0;} visorAplicar(); }
+    else if(arr&&e.touches.length===1&&vz.esc>1){ var t=e.touches[0]; vz.x=t.clientX-arr.x; vz.y=t.clientY-arr.y; visorAplicar(); }
+  },{passive:false});
+  palco.addEventListener('touchend',function(e){
+    // sem zoom: arrastar para o lado troca de foto
+    if(arr&&!pin&&vz.esc===1&&e.changedTouches.length&&vz.lista.length>1){
+      var dx=e.changedTouches[0].clientX-arr.sx; if(Math.abs(dx)>60) visorIr(dx<0?1:-1);
+    }
+    if(e.touches.length<2) pin=null; if(!e.touches.length) arr=null;
+  });
+})();
 </script>
 </body>
 </html>
