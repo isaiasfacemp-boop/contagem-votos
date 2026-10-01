@@ -123,13 +123,15 @@ async function onRequest(ctx) {
       return json({ v: v ? Number(v.v) : 0 });
     }
     if (rota === "state" && metodo === "GET") {
-      const [cfg, regs, users] = await db.batch([
+      // lista de usuários só é buscada para o admin (economiza leituras no banco)
+      const consultas = [
         db.prepare("SELECT k, v FROM config"),
         db.prepare(`SELECT r.id, r.zona, r.sec, r.d, r.p, r.r, r.por, r.criado,
                     (SELECT COUNT(*) FROM fotos f WHERE f.reg_id = r.id) AS nfotos
-                    FROM regs r ORDER BY r.id`),
-        db.prepare("SELECT id, user, role, acessos FROM users ORDER BY id")
-      ]);
+                    FROM regs r ORDER BY r.id`)
+      ];
+      if (isAdmin) consultas.push(db.prepare("SELECT id, user, role, acessos FROM users ORDER BY id"));
+      const [cfg, regs, users] = await db.batch(consultas);
       const config = {};
       let zonas = ZONAS_PADRAO;
       cfg.results.forEach((x) => {
@@ -144,7 +146,7 @@ async function onRequest(ctx) {
         zonas,
         versao: config.versao || 0,
         regs: regs.results,
-        users: isAdmin ? users.results.map(publicUser) : []
+        users: isAdmin && users ? users.results.map(publicUser) : []
       });
     }
     if (rota === "config" && metodo === "PUT") {

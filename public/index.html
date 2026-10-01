@@ -30,10 +30,10 @@ body{font-family:system-ui,sans-serif;background:#f1f3f5;min-height:100vh}
 body.tv{overflow:hidden}
 body.tv #tv-wrap{display:block}
 body.tv .app-screen{display:none!important}
-#tv-stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;padding:36px 44px;box-sizing:border-box;
+#tv-stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;padding:26px 44px;box-sizing:border-box;
   background:radial-gradient(1200px 600px at 15% 0%,#1b2a5c 0%,transparent 60%),radial-gradient(1000px 600px at 100% 100%,#3a1222 0%,transparent 55%),#0b1128;
-  color:#fff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;gap:24px}
-.tv-top{display:flex;align-items:center;justify-content:space-between;height:84px}
+  color:#fff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;gap:18px}
+.tv-top{display:flex;align-items:center;justify-content:space-between;height:76px}
 .tv-titulo{font-size:44px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;line-height:1}
 .tv-titulo small{display:block;font-size:20px;font-weight:600;letter-spacing:.12em;color:#9fb0e0;margin-top:8px}
 .tv-status{text-align:right;font-size:20px;font-weight:700;color:#9fb0e0;text-transform:uppercase;letter-spacing:.06em}
@@ -41,7 +41,7 @@ body.tv .app-screen{display:none!important}
 .tv-aovivo{display:inline-flex;align-items:center;gap:8px;color:#ff5252}
 .tv-aovivo i{width:14px;height:14px;border-radius:50%;background:#ff5252;animation:tvpisca 1.4s infinite}
 @keyframes tvpisca{50%{opacity:.25}}
-.tv-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:28px;height:540px}
+.tv-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:28px;height:420px;flex-shrink:0}
 /* 4 quadros: foto | votos | foto | votos */
 .tv-q-foto{position:relative;background:#fff;border-radius:24px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.35);border-top:10px solid var(--cor);display:flex;align-items:center;justify-content:center;font-size:150px}
 .tv-q-foto .bg{position:absolute;inset:-30px;background-size:cover;background-position:center;filter:blur(22px) brightness(.9);transform:scale(1.1)}
@@ -61,23 +61,38 @@ body.tv .app-screen{display:none!important}
 .tv-pct{font-size:56px;font-weight:900;color:var(--cor);line-height:1}
 .tv-base{font-size:18px;font-weight:700;color:#9fb0e0;text-transform:uppercase;letter-spacing:.08em;text-align:center;margin-top:-10px}
 .tv-baixo{flex:1;display:grid;grid-template-columns:1.85fr 1fr;gap:32px;min-height:0}
-.tv-painel{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:22px 30px;display:flex;flex-direction:column;justify-content:center;gap:14px}
+.tv-painel{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:16px 30px;display:flex;flex-direction:column;justify-content:center;gap:10px}
 .tv-painel-tit{font-size:22px;font-weight:800;color:#9fb0e0;text-transform:uppercase;letter-spacing:.08em}
-.tv-painel-ult{justify-content:flex-start;padding-top:20px}
+.tv-painel-ult{justify-content:flex-start;padding-top:16px;padding-bottom:16px}
 .tv-painel-ult .tv-painel-tit{text-align:center;font-size:26px}
-#tv-linhas{flex:1;display:flex;flex-direction:column;justify-content:center;gap:44px}
+#tv-linhas{flex:1;display:flex;flex-direction:column;justify-content:center;gap:22px}
 .tv-linha{display:grid;grid-template-columns:380px 1fr 170px;align-items:center;gap:20px}
 .tv-linha .n{font-size:28px;font-weight:800;text-transform:uppercase;white-space:nowrap}
 .tv-linha .v{font-size:30px;font-weight:800;text-align:right}
-.tv-trilho{height:46px;background:rgba(255,255,255,.12);border-radius:12px;position:relative;overflow:hidden}
+.tv-trilho{height:40px;background:rgba(255,255,255,.12);border-radius:12px;position:relative;overflow:hidden}
 .tv-fill{height:100%;border-radius:12px;background:var(--cor);transition:width .6s ease}
 .tv-fill-pct{position:absolute;top:50%;transform:translateY(-50%);font-size:26px;font-weight:900;white-space:nowrap}
 .tv-sec-nums{display:flex;justify-content:space-between;font-size:26px;font-weight:800;text-transform:uppercase}
 .tv-sec-nums .a{color:#69d36e}.tv-sec-nums .f{color:#ff6b6b}
-.tv-sec-big{font-size:84px;font-weight:900;line-height:1;text-align:center}
+.tv-sec-big{font-size:68px;font-weight:900;line-height:1;text-align:center}
 .tv-sec-big small{font-size:30px;color:#9fb0e0;font-weight:700}
-.tv-sec-bar{height:46px;border-radius:12px;background:#e53935;overflow:hidden}
+.tv-sec-bar{height:36px;border-radius:12px;background:#e53935;overflow:hidden}
 .tv-sec-bar div{height:100%;background:#2e7d32;transition:width .6s ease}
+/* últimas 5 seções (para conferência) */
+.tv-ult5{height:168px;flex-shrink:0;display:flex;flex-direction:column;gap:10px}
+.tv-ult5-tit{font-size:20px;font-weight:800;color:#9fb0e0;text-transform:uppercase;letter-spacing:.1em}
+.tv-ult5-grid{flex:1;display:grid;grid-template-columns:repeat(5,1fr);gap:20px;min-height:0}
+.tv-u5{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:12px 20px;display:flex;flex-direction:column;justify-content:center;gap:6px;position:relative}
+.tv-u5.nova{border:2px solid #ffd54f;background:rgba(255,213,79,.10)}
+.tv-u5 .cab{font-size:20px;font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+.tv-u5 .tag{position:absolute;top:-12px;right:16px;font-size:13px;font-weight:900;color:#1a1a2e;background:#ffd54f;border-radius:6px;padding:2px 8px;letter-spacing:.06em}
+.tv-u5 .lin{display:flex;justify-content:space-between;font-size:22px;font-weight:800;text-transform:uppercase}
+.tv-u5 .lin b{color:#fff;font-size:26px}
+.tv-u5.vazio{opacity:.35;align-items:center;font-size:18px;font-weight:700;color:#9fb0e0}
+#tv-wrap.dia .tv-u5{background:#fff;border-color:#dde3ee;box-shadow:0 8px 24px rgba(20,30,60,.08)}
+#tv-wrap.dia .tv-u5.nova{border-color:#f9a825;background:#fff8e1}
+#tv-wrap.dia .tv-u5 .lin b{color:#1a1a2e}
+#tv-wrap.dia .tv-ult5-tit{color:#5a6787}
 .tv-bar{display:none;position:fixed;top:14px;right:14px;z-index:999;gap:8px;align-items:center;background:rgba(0,0,0,.6);padding:8px;border-radius:12px;transition:opacity .4s}
 body.tv .tv-bar{display:flex}
 .tv-bar.oculta{opacity:0;pointer-events:none}
@@ -451,6 +466,10 @@ body.tv .tv-bar{display:flex}
       <div class="tv-sec-nums"><span class="a" id="tv-sec-a">APURADAS 0,0%</span><span class="f" id="tv-sec-f">FALTAM 100,0%</span></div>
     </div>
   </div>
+  <div class="tv-ult5">
+    <div class="tv-ult5-tit">Seções anteriores — para conferência</div>
+    <div class="tv-ult5-grid" id="tv-ult5"></div>
+  </div>
 </div></div>
 <div class="tv-bar" id="tv-bar">
   <button id="tv-tema" onclick="tvAlternarTema()" title="Dia / Noite (tecla T)">☀️ Dia</button>
@@ -470,10 +489,14 @@ var DATA = { regs: [], totalSec: 245, totalEleitores: 0, users: [] };
 var currentUser = null;
 var editingUserId = null;
 var formFotos = [];
-var TOKEN = localStorage.getItem('vt_token') || '';
+// login vale só enquanto a aba/navegador estiver aberto: fechou, pede usuário e senha de novo
+try { localStorage.removeItem('vt_token'); } catch(e) {}   // apaga login antigo que ficava salvo
+var TOKEN = '';
+try { TOKEN = sessionStorage.getItem('vt_token') || ''; } catch(e) {}
 var ultimoEstado = '';
 var ultimaVersao = -1;
-var INTERVALO_MS = 2000;   // intervalo da atualização automática
+var INTERVALO_TV_MS = 2000;   // TV/telão atualiza a cada 2 s
+var INTERVALO_CEL_MS = 5000;  // celulares a cada 5 s (economiza o limite da Cloudflare)
 var consultando = false;
 var pollTimer = null;
 var abertos = {};      // seções expandidas na lista
@@ -515,7 +538,7 @@ function iniciarPolling() {
     api('GET','versao').then(function(r) {
       if (r.v !== ultimaVersao) return carregarEstado(false);
     }).catch(function(){}).then(function(){ consultando = false; });
-  }, INTERVALO_MS);
+  }, document.body.classList.contains('tv') ? INTERVALO_TV_MS : INTERVALO_CEL_MS);
 }
 // ao voltar para o app (trocou de aba / desbloqueou o celular), atualiza na hora
 document.addEventListener('visibilitychange', function() {
@@ -545,7 +568,7 @@ function doLogin() {
   err.style.display='none';
   if (!u || !p) { err.textContent='INFORME USUÁRIO E SENHA'; err.style.display='block'; return; }
   api('POST', 'login', {user:u, pass:p}).then(function(r) {
-    TOKEN = r.token; localStorage.setItem('vt_token', TOKEN);
+    TOKEN = r.token; try { sessionStorage.setItem('vt_token', TOKEN); } catch(e) {}
     entrarNoApp(r.user);
   }).catch(function(e) { err.textContent=e.message; err.style.display='block'; });
 }
@@ -553,7 +576,7 @@ function doLogin() {
 function sairLocal() {
   pararPolling();
   document.body.classList.remove('tv');
-  TOKEN=''; localStorage.removeItem('vt_token');
+  TOKEN=''; try { sessionStorage.removeItem('vt_token'); } catch(e) {}
   currentUser = null; ultimoEstado=''; ultimaVersao=-1; abertos={}; cacheFotos={};
   document.getElementById('app-screen').style.display='none';
   document.getElementById('login-screen').style.display='flex';
@@ -796,7 +819,9 @@ function checarSecao(){
   var btn=document.querySelector('#pane-registro .btn-salvar');
   var ja=secaoExistente(inp.value);
   if (ja) {
-    aviso.textContent='⚠ SEÇÃO '+ja.sec+' JÁ FOI DIGITADA (ZONA '+ja.zona+', POR '+ja.por+'). NÃO PODE REPETIR.';
+    var isAdm=currentUser&&currentUser.role==='admin';
+    aviso.innerHTML='⚠ SEÇÃO '+esc(ja.sec)+' JÁ FOI DIGITADA (ZONA '+esc(ja.zona)+', POR '+esc(ja.por)+'). NÃO PODE REPETIR.'
+      +(isAdm?'<br><button type="button" onclick="delReg('+ja.id+')" style="margin-top:6px;border:none;border-radius:6px;background:#c62828;color:#fff;font-weight:800;font-size:11px;padding:6px 10px;cursor:pointer">🗑 EXCLUIR ESSA SEÇÃO E LIBERAR PARA DIGITAR DE NOVO</button>':'');
     aviso.style.display='block'; inp.style.borderColor='#c62828'; inp.style.background='#ffebee';
     if (!salvandoReg) { btn.disabled=true; btn.style.opacity='.5'; btn.style.cursor='not-allowed'; }
   } else {
@@ -839,7 +864,8 @@ function addReg() {
 }
 
 function delReg(id) {
-  if (!confirm('EXCLUIR ESTE REGISTRO?')) return;
+  var r=DATA.regs.filter(function(x){return x.id===id})[0];
+  if (!confirm(r?'EXCLUIR A SEÇÃO '+r.sec+' (ZONA '+r.zona+')?\nELA FICA LIVRE PARA SER DIGITADA DE NOVO.':'EXCLUIR ESTE REGISTRO?')) return;
   api('DELETE','regs/'+id).then(function(){ delete cacheFotos[id]; delete abertos[id]; return carregarEstado(true); })
     .catch(function(e){ alert(e.message); });
 }
@@ -1086,6 +1112,17 @@ function renderTV() {
   document.getElementById('tv-sec-fill').style.width=(ap>0?Math.max(pv,1.5):0)+'%';
   document.getElementById('tv-sec-a').textContent='APURADAS '+fmtPct(pv);
   document.getElementById('tv-sec-f').textContent='FALTAM '+fmtPct(100-pv);
+  // 5 seções anteriores à última (a última já aparece no quadro de cima)
+  var ult5=DATA.regs.slice(0,-1).slice(-5).reverse(), h='';
+  for (var k=0;k<5;k++) {
+    var x=ult5[k];
+    if (!x) { h+='<div class="tv-u5 vazio">—</div>'; continue; }
+    h+='<div class="tv-u5">'
+      +'<div class="cab">Zona '+esc(x.zona)+' · Seção '+esc(x.sec)+'</div>'
+      +TV_CANDS.map(function(c){ return '<div class="lin"><span style="color:'+c.cor+';filter:brightness(1.5)">'+c.nome+'</span><b>'+(x[c.k]||0).toLocaleString('pt-BR')+'</b></div>'; }).join('')
+      +'</div>';
+  }
+  document.getElementById('tv-ult5').innerHTML=h;
   document.getElementById('tv-hora').textContent=new Date().toLocaleTimeString('pt-BR');
 }
 
@@ -1119,11 +1156,13 @@ function tvMostrarBarra() {
 function entrarModoTV() {
   document.body.classList.add('tv');
   tvAplicarTema(); renderTV(); tvAplicar();
+  if (currentUser) iniciarPolling();   // passa a atualizar a cada 2 s
   if (!document.fullscreenElement) tvTelaCheia();
   tvMostrarBarra();
 }
 function sairModoTV() {
   document.body.classList.remove('tv');
+  if (currentUser) iniciarPolling();   // volta para 5 s
   if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen();
   showTab('resumo');
 }
