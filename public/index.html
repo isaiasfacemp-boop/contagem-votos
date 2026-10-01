@@ -149,6 +149,8 @@ body.tv .tv-bar{display:flex}
 .field select{text-transform:uppercase;font-weight:600}
 .field input:focus,.field select:focus{outline:none;border-color:#1565c0;background:#fff}
 .foto-drop{border:2px dashed #ccc;border-radius:8px;padding:1rem;text-align:center;color:#999;font-size:13px;cursor:pointer;margin-bottom:10px;transition:.2s;text-transform:uppercase;font-weight:600;letter-spacing:.04em}
+.foto-row{display:flex;gap:8px}
+.foto-row .foto-drop{flex:1;padding:1rem .5rem}
 .foto-drop:hover{background:#f5f7ff;border-color:#1565c0;color:#1565c0}
 .fotos-mini{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
 .thumb{position:relative;width:74px;height:62px;border-radius:6px;overflow:hidden;border:1px solid #ddd}
@@ -322,7 +324,11 @@ body.tv .tv-bar{display:flex}
           <div class="field"><label style="color:#2e7d32">Rogério Andrade</label><input type="number" id="in-r" placeholder="0" min="0" style="text-transform:none"></div>
         </div>
         <div class="sec-title">Fotos do comprovante <span style="color:#c62828">* obrigatório</span></div>
-        <div class="foto-drop" onclick="document.getElementById('file-in').click()">📷 Toque para anexar fotos</div>
+        <div class="foto-row">
+          <div class="foto-drop" onclick="document.getElementById('cam-in').click()">📷 Tirar foto</div>
+          <div class="foto-drop" onclick="document.getElementById('file-in').click()">🖼️ Toque para anexar</div>
+        </div>
+        <input type="file" id="cam-in" accept="image/*" capture="environment" style="display:none" onchange="addFotoForm(this)">
         <input type="file" id="file-in" accept="image/*" multiple style="display:none" onchange="addFotoForm(this)">
         <div class="fotos-mini" id="form-fotos"></div>
         <button class="btn-salvar" onclick="addReg()">✓ Salvar seção</button>
@@ -674,10 +680,10 @@ function addReg() {
   if (!zona||!sec) {showMsg('err-msg','INFORME A ZONA E A SEÇÃO.');return;}
   if (!formFotos.length) {
     showMsg('err-msg','ANEXE PELO MENOS UMA FOTO DO COMPROVANTE PARA SALVAR.');
-    var drop=document.querySelector('#pane-registro .foto-drop');
-    drop.style.borderColor='#c62828'; drop.style.background='#ffebee';
-    drop.scrollIntoView({behavior:'smooth',block:'center'});
-    setTimeout(function(){drop.style.borderColor='';drop.style.background='';},3000);
+    var drops=document.querySelectorAll('#pane-registro .foto-drop');
+    drops.forEach(function(drop){drop.style.borderColor='#c62828'; drop.style.background='#ffebee';});
+    drops[0].scrollIntoView({behavior:'smooth',block:'center'});
+    setTimeout(function(){drops.forEach(function(drop){drop.style.borderColor='';drop.style.background='';});},3000);
     return;
   }
   var btn=document.querySelector('#pane-registro .btn-salvar');
