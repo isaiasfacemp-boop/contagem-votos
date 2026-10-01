@@ -2,8 +2,16 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Contagem de Votos</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1565c0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Votos">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,sans-serif;background:#f1f3f5;min-height:100vh}
@@ -209,6 +217,20 @@ body.tv .tv-bar{display:flex}
 .zona-btn:hover{border-color:#1565c0}
 .zona-btn.sel{background:#1565c0;border-color:#1565c0;color:#fff}
 .zona-opcoes.falta .zona-btn{border-color:#c62828;background:#ffebee}
+.app-dlg-fundo{position:fixed;inset:0;z-index:3000;background:rgba(10,15,35,.55);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;transition:opacity .15s}
+.app-dlg-fundo.on{opacity:1}
+.app-dlg{background:#fff;border-radius:16px;width:100%;max-width:360px;padding:22px 20px 16px;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center;transform:scale(.94);transition:transform .15s}
+.app-dlg-fundo.on .app-dlg{transform:scale(1)}
+.app-dlg .ic{font-size:34px;margin-bottom:6px}
+.app-dlg .tit{font-size:16px;font-weight:800;color:#1a1a2e;text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px}
+.app-dlg .txt{font-size:13px;color:#555;line-height:1.5;white-space:pre-line;margin-bottom:18px;text-transform:uppercase;font-weight:600}
+.app-dlg .bts{display:flex;gap:10px}
+.app-dlg button{flex:1;padding:12px;border-radius:10px;border:none;font-size:13px;font-weight:800;cursor:pointer;text-transform:uppercase;letter-spacing:.04em}
+.app-dlg .nao{background:#eef1f5;color:#555}
+.app-dlg .sim{background:#1565c0;color:#fff}
+.app-dlg .sim.perigo{background:#c62828}
+.btn-instalar{display:none;width:100%;margin-top:10px;padding:10px;border-radius:8px;border:1.5px solid #1565c0;background:#fff;color:#1565c0;font-size:13px;font-weight:800;cursor:pointer;text-transform:uppercase;letter-spacing:.04em}
+.dica-ios{display:none;margin-top:10px;font-size:11px;color:#666;text-align:center;line-height:1.5;background:#f5f7fb;border-radius:8px;padding:8px}
 .err{color:#c62828;font-size:12px;margin-top:8px;display:none;padding:6px 10px;background:#ffebee;border-radius:6px;text-transform:uppercase;font-weight:600}
 .ok{color:#2e7d32;font-size:12px;margin-top:8px;display:none;padding:6px 10px;background:#e8f5e9;border-radius:6px;text-transform:uppercase;font-weight:600}
 
@@ -270,6 +292,8 @@ body.tv .tv-bar{display:flex}
     <div class="login-field"><label>Usuário</label><input type="text" id="l-user" placeholder="seu usuário" autocomplete="off" style="text-transform:uppercase"></div>
     <div class="login-field"><label>Senha</label><input type="password" id="l-pass" placeholder="sua senha" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <button class="btn-login" onclick="doLogin()">Entrar</button>
+    <button class="btn-instalar" id="btn-instalar" onclick="instalarApp()">📲 Instalar aplicativo</button>
+    <div class="dica-ios" id="dica-ios">📲 Para usar como aplicativo no iPhone: toque em <b>Compartilhar</b> (□↑) e depois em <b>Adicionar à Tela de Início</b>.</div>
     <div class="login-err" id="login-err">USUÁRIO OU SENHA INCORRETOS</div>
   </div>
 </div>
@@ -485,6 +509,46 @@ document.addEventListener('DOMContentLoaded',function(){
     w.insertBefore(bg,img);
   });
 });
+// ===================== JANELAS DO APP (no lugar do aviso do navegador) =====================
+function appDialogo(tit, txt, botaoOk, perigo, comCancelar){
+  return new Promise(function(fim){
+    var f=document.createElement('div'); f.className='app-dlg-fundo';
+    f.innerHTML='<div class="app-dlg" role="dialog"><div class="ic">'+(perigo?'🗑️':(comCancelar?'❓':'⚠️'))+'</div>'
+      +'<div class="tit"></div><div class="txt"></div><div class="bts">'
+      +(comCancelar?'<button class="nao">Cancelar</button>':'')
+      +'<button class="sim'+(perigo?' perigo':'')+'"></button></div></div>';
+    f.querySelector('.tit').textContent=tit; f.querySelector('.txt').textContent=txt; f.querySelector('.sim').textContent=botaoOk;
+    function fechar(v){ f.classList.remove('on'); document.removeEventListener('keydown',tecla); setTimeout(function(){f.remove()},150); fim(v); }
+    function tecla(e){ if(e.key==='Escape') fechar(false); else if(e.key==='Enter') fechar(true); }
+    f.querySelector('.sim').onclick=function(){fechar(true)};
+    if (comCancelar) f.querySelector('.nao').onclick=function(){fechar(false)};
+    f.addEventListener('click',function(e){ if(e.target===f) fechar(false); });
+    document.addEventListener('keydown',tecla);
+    document.body.appendChild(f); requestAnimationFrame(function(){f.classList.add('on')});
+    f.querySelector('.sim').focus();
+  });
+}
+function appConfirm(tit, txt, botaoOk, perigo){ return appDialogo(tit, txt, botaoOk||'OK', perigo, true); }
+function appAlert(txt){ return appDialogo('Atenção', txt, 'OK', false, false); }
+
+// ===================== INSTALAR COMO APLICATIVO =====================
+var promptInstalar=null;
+var modoApp=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
+window.addEventListener('beforeinstallprompt',function(e){
+  e.preventDefault(); promptInstalar=e;
+  var b=document.getElementById('btn-instalar'); if(b) b.style.display='block';
+});
+window.addEventListener('appinstalled',function(){ var b=document.getElementById('btn-instalar'); if(b) b.style.display='none'; });
+function instalarApp(){
+  if (!promptInstalar) return;
+  promptInstalar.prompt();
+  promptInstalar.userChoice.finally(function(){ promptInstalar=null; document.getElementById('btn-instalar').style.display='none'; });
+}
+document.addEventListener('DOMContentLoaded',function(){
+  // iPhone não tem botão de instalar: mostra a dica
+  var ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  if (ios && !modoApp) { var d=document.getElementById('dica-ios'); if(d) d.style.display='block'; }
+});
 var DATA = { regs: [], totalSec: 245, totalEleitores: 0, users: [] };
 var currentUser = null;
 var editingUserId = null;
@@ -557,7 +621,7 @@ function entrarNoApp(user) {
   var rl = {admin:'ADMIN',digitador:'DIGITADOR',visualizador:'VISUALIZADOR'}[user.role]||user.role;
   document.getElementById('top-role').textContent = rl;
   setupTabs();
-  carregarEstado(true).then(carregarConfig).catch(function(e){ alert(e.message); });
+  carregarEstado(true).then(carregarConfig).catch(function(e){ appAlert(e.message); });
   iniciarPolling();
 }
 
@@ -677,9 +741,12 @@ function cancelarEdicao() {
 }
 
 function excluirUsuario(id) {
-  if (!confirm('EXCLUIR ESTE USUÁRIO?')) return;
-  api('DELETE','users/'+id).then(function(){ return carregarEstado(true); })
-    .catch(function(e){ alert(e.message); });
+  var u=(DATA.users||[]).filter(function(x){return x.id===id})[0];
+  appConfirm('Excluir usuário', 'EXCLUIR O USUÁRIO '+(u?u.user:'')+'?', 'Excluir', true).then(function(ok){
+    if (!ok) return;
+    api('DELETE','users/'+id).then(function(){ return carregarEstado(true); })
+      .catch(function(e){ appAlert(e.message); });
+  });
 }
 
 function esc(t) {
@@ -735,7 +802,7 @@ function addFotoForm(input) {
     comprimirImagem(f).then(function(src) {
       formFotos.push({src:src,name:f.name,id:Date.now()+Math.random()});
       renderFormFotos();
-    }).catch(function(){ alert('NÃO FOI POSSÍVEL LER A FOTO '+f.name); });
+    }).catch(function(){ appAlert('NÃO FOI POSSÍVEL LER A FOTO '+f.name); });
   });
   input.value='';
 }
@@ -796,9 +863,11 @@ function cancelarZona(){
   document.getElementById('zona-form-title').textContent='Zonas';
 }
 function excluirZona(z){
-  if (!confirm('EXCLUIR A '+rotZona(z)+' ZONA?')) return;
-  api('DELETE','zonas/'+encodeURIComponent(z)).then(function(){ if(zonaEditando===z) cancelarZona(); return carregarEstado(true); })
-    .catch(function(e){ showMsg('err-zona',e.message); });
+  appConfirm('Excluir zona', 'EXCLUIR A '+rotZona(z)+' ZONA?', 'Excluir', true).then(function(ok){
+    if (!ok) return;
+    api('DELETE','zonas/'+encodeURIComponent(z)).then(function(){ if(zonaEditando===z) cancelarZona(); return carregarEstado(true); })
+      .catch(function(e){ showMsg('err-zona',e.message); });
+  });
 }
 function escolherZona(z){
   document.getElementById('in-zona').value=z;
@@ -865,9 +934,11 @@ function addReg() {
 
 function delReg(id) {
   var r=DATA.regs.filter(function(x){return x.id===id})[0];
-  if (!confirm(r?'EXCLUIR A SEÇÃO '+r.sec+' (ZONA '+r.zona+')?\nELA FICA LIVRE PARA SER DIGITADA DE NOVO.':'EXCLUIR ESTE REGISTRO?')) return;
-  api('DELETE','regs/'+id).then(function(){ delete cacheFotos[id]; delete abertos[id]; return carregarEstado(true); })
-    .catch(function(e){ alert(e.message); });
+  appConfirm('Excluir seção', r?'EXCLUIR A SEÇÃO '+r.sec+' (ZONA '+r.zona+')?\nELA FICA LIVRE PARA SER DIGITADA DE NOVO.':'EXCLUIR ESTE REGISTRO?', 'Excluir', true).then(function(ok){
+    if (!ok) return;
+    api('DELETE','regs/'+id).then(function(){ delete cacheFotos[id]; delete abertos[id]; return carregarEstado(true); })
+      .catch(function(e){ appAlert(e.message); });
+  });
 }
 
 function htmlFotos(id) {
