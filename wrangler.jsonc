@@ -1,5 +1,5 @@
 {
-  "name": "contagem-votos-2026",
+  "name": "contagem-votos",
   "main": "src/worker.js",
   "compatibility_date": "2026-09-01",
   "assets": {
