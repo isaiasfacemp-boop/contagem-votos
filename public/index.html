@@ -466,11 +466,11 @@ body.tv .tv-bar{display:flex}
       <div class="form-box">
         <div class="sec-title">Resultados</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn-linha" onclick="exportarPlanilha()">📥 Exportar planilha (Excel)</button>
+          <button class="btn-linha" id="btn-pdf" onclick="escolherPDF()">📄 Gerar relatório (PDF)</button>
           <button class="btn-linha" id="btn-zip" onclick="baixarFotosZip()">🖼️ Baixar fotos (.zip)</button>
         </div>
         <button class="btn-salvar vermelho" style="margin-top:10px" onclick="zerarApuracao()">🗑 Zerar apuração</button>
-        <div class="enc-dica">Zerar apaga todas as seções digitadas e as fotos dos comprovantes. Candidatos, zonas, usuários e configuração continuam. Exporte a planilha e as fotos antes.</div>
+        <div class="enc-dica">Zerar apaga todas as seções digitadas e as fotos dos comprovantes. Candidatos, zonas, usuários e configuração continuam. Gere o relatório PDF com as fotos antes.</div>
         <div class="ok" id="ok-res"></div>
       </div>
       <div class="form-box">
@@ -995,6 +995,156 @@ function exportarPlanilha(){
   document.body.appendChild(a); a.click(); setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},1000);
   showMsg('ok-res','PLANILHA BAIXADA ('+DATA.regs.length+' SEÇÕES)');
 }
+// ===================== RELATÓRIO PDF =====================
+function carregarScript(url){
+  return new Promise(function(ok,falha){
+    var sc=document.createElement('script'); sc.src=url; sc.onload=ok;
+    sc.onerror=function(){falha(new Error('SEM INTERNET PARA GERAR O PDF.'))}; document.head.appendChild(sc);
+  });
+}
+function carregarJsPDF(){
+  if (window.jspdf && window.jspdf.jsPDF && window.jspdf.jsPDF.API.autoTable) return Promise.resolve();
+  return carregarScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
+    .then(function(){ return carregarScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js'); });
+}
+function urlParaImagem(url){
+  return fetch(url).then(function(r){ if(!r.ok) throw 0; return r.blob(); }).then(function(b){
+    return new Promise(function(ok){ var fr=new FileReader(); fr.onload=function(){ok(fr.result)}; fr.readAsDataURL(b); });
+  }).then(dadosImagem).catch(function(){ return null; });
+}
+function dadosImagem(src){
+  return new Promise(function(ok){
+    var im=new Image(); im.onload=function(){ ok({src:src,w:im.naturalWidth,h:im.naturalHeight,fmt:/^data:image\/png/.test(src)?'PNG':'JPEG'}); };
+    im.onerror=function(){ok(null)}; im.src=src;
+  });
+}
+function hexRGB(h){ h=(h||'#1565c0').replace('#',''); return [parseInt(h.substr(0,2),16),parseInt(h.substr(2,2),16),parseInt(h.substr(4,2),16)]; }
+// desenha a imagem inteira dentro da caixa (sem cortar)
+function pdfImagem(doc,img,x,y,w,h){
+  if (!img) return;
+  var k=Math.min(w/img.w,h/img.h), iw=img.w*k, ih=img.h*k;
+  doc.addImage(img.src,img.fmt,x+(w-iw)/2,y+(h-ih)/2,iw,ih);
+}
+function escolherPDF(){
+  var f=document.createElement('div'); f.className='app-dlg-fundo';
+  f.innerHTML='<div class="app-dlg"><div class="ic">📄</div><div class="tit">Relatório em PDF</div>'
+    +'<div class="txt">INCLUIR AS FOTOS DOS COMPROVANTES NO RELATÓRIO?\nCOM FOTOS O ARQUIVO FICA MAIOR E DEMORA MAIS.</div>'
+    +'<div class="bts" style="flex-direction:column"><button class="sim" data-f="1">📷 Com as fotos</button><button class="sim" data-f="0" style="background:#2e7d32">Só os resultados</button><button class="nao">Cancelar</button></div></div>';
+  function fechar(){ f.classList.remove('on'); setTimeout(function(){f.remove()},150); }
+  f.querySelectorAll('.sim').forEach(function(b){ b.onclick=function(){ fechar(); gerarPDF(b.getAttribute('data-f')==='1'); }; });
+  f.querySelector('.nao').onclick=fechar;
+  f.addEventListener('click',function(e){ if(e.target===f) fechar(); });
+  document.body.appendChild(f); requestAnimationFrame(function(){f.classList.add('on')});
+}
+function gerarPDF(comFotos){
+  var bt=document.getElementById('btn-pdf'); bt.disabled=true; bt.textContent='Preparando PDF...';
+  var cs=candidatos(), regs=DATA.regs.slice();
+  var fotosCand=[];
+  carregarJsPDF().then(function(){
+    return Promise.all(cs.map(function(c){ var u=fotoCand(c); return u?urlParaImagem(u):null; }));
+  }).then(function(fc){
+    fotosCand=fc;
+    var doc=new window.jspdf.jsPDF({unit:'mm',format:'a4'});
+    var W=210,H=297,M=14,y;
+    var agora=new Date();
+    // cabeçalho
+    doc.setFillColor(21,101,192); doc.rect(0,0,W,30,'F');
+    doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(20);
+    doc.text('APURAÇÃO DE VOTOS',M,14);
+    doc.setFont('helvetica','normal'); doc.setFontSize(10);
+    doc.text('Relatório gerado em '+agora.toLocaleDateString('pt-BR')+' às '+agora.toLocaleTimeString('pt-BR').slice(0,5),M,22);
+    var tots=cs.map(function(c){ return regs.reduce(function(a,x){return a+votosDe(x,c.id)},0); });
+    var totGeral=tots.reduce(function(a,b){return a+b},0);
+    var pcts=pctsSomando100(tots);
+    var totSec=DATA.totalSec||0, pSec=totSec?Math.min(100,regs.length/totSec*100):0;
+    doc.setTextColor(30,30,50); doc.setFont('helvetica','bold'); doc.setFontSize(11);
+    doc.text('Seções apuradas: '+regs.length+' de '+totSec+' ('+fmtPct(pSec)+')',M,40);
+    doc.text('Total de votos: '+totGeral.toLocaleString('pt-BR'),W-M,40,{align:'right'});
+    // cards dos candidatos
+    var cols=cs.length<=4?2:3, gap=5, cw=(W-2*M-gap*(cols-1))/cols, ch=42;
+    y=46;
+    cs.forEach(function(c,i){
+      var col=i%cols, x=M+col*(cw+gap); if (i>0&&col===0) y+=ch+gap;
+      var rgb=hexRGB(c.cor);
+      doc.setDrawColor(220,224,230); doc.setFillColor(255,255,255); doc.roundedRect(x,y,cw,ch,2.5,2.5,'FD');
+      doc.setFillColor(rgb[0],rgb[1],rgb[2]); doc.rect(x,y,2.5,ch,'F');
+      var fw=cols===2?36:26;
+      doc.setFillColor(238,241,247); doc.rect(x+5,y+3,fw,ch-6,'F');
+      pdfImagem(doc,fotosCand[i],x+5,y+3,fw,ch-6);
+      var tx=x+5+fw+4, tw=cw-(fw+12);
+      doc.setTextColor(rgb[0],rgb[1],rgb[2]); doc.setFont('helvetica','bold'); doc.setFontSize(cols===2?11:9);
+      doc.text(doc.splitTextToSize(c.nome,tw)[0],tx,y+9);
+      doc.setTextColor(120,120,120); doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+      if (c.cargo) doc.text(doc.splitTextToSize(c.cargo,tw)[0],tx,y+14);
+      doc.setTextColor(26,26,46); doc.setFont('helvetica','bold'); doc.setFontSize(cols===2?22:17);
+      doc.text(tots[i].toLocaleString('pt-BR'),tx,y+27);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(120,120,120);
+      doc.text('votos',tx,y+32);
+      doc.setTextColor(rgb[0],rgb[1],rgb[2]); doc.setFont('helvetica','bold'); doc.setFontSize(cols===2?12:10);
+      doc.text(fmtPct(pcts[i])+' dos votos',tx,y+38.5);
+    });
+    y+=ch+10;
+    // tabela de seções
+    doc.setTextColor(30,30,50); doc.setFont('helvetica','bold'); doc.setFontSize(12);
+    doc.text('Votos por seção',M,y); y+=3;
+    var corpo=regs.map(function(x){
+      var vs=cs.map(function(c){return votosDe(x,c.id)});
+      return [x.zona,x.sec].concat(vs.map(function(v){return v.toLocaleString('pt-BR')}))
+        .concat([vs.reduce(function(a,b){return a+b},0).toLocaleString('pt-BR'),x.por,x.criado?new Date(x.criado).toLocaleTimeString('pt-BR').slice(0,5):'']);
+    });
+    var colCand={}; cs.forEach(function(c,i){ colCand[i+2]={halign:'right',textColor:hexRGB(c.cor),fontStyle:'bold'}; });
+    colCand[cs.length+2]={halign:'right',fontStyle:'bold'};
+    doc.autoTable({
+      startY:y, margin:{left:M,right:M},
+      head:[['Zona','Seção'].concat(cs.map(function(c){return c.nome})).concat(['Total','Digitado por','Hora'])],
+      body:corpo.length?corpo:[[{content:'Nenhuma seção digitada',colSpan:cs.length+5,styles:{halign:'center'}}]],
+      foot:[['TOTAL',regs.length+' seç.'].concat(tots.map(function(t){return t.toLocaleString('pt-BR')})).concat([totGeral.toLocaleString('pt-BR'),'',''])],
+      styles:{fontSize:cs.length>4?7:8,cellPadding:1.6}, headStyles:{fillColor:[21,101,192],fontSize:cs.length>4?6.5:7.5},
+      footStyles:{fillColor:[232,238,248],textColor:[26,26,46],fontStyle:'bold'},
+      alternateRowStyles:{fillColor:[247,249,252]}, columnStyles:colCand
+    });
+    if (!comFotos) return doc;
+    // páginas com as fotos dos comprovantes
+    var feitos=0;
+    doc.addPage(); y=M;
+    doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(30,30,50);
+    doc.text('Comprovantes das seções',M,y+4); y+=12;
+    return regs.reduce(function(p,x){
+      return p.then(function(){
+        return api('GET','fotos/'+x.id).then(function(r){
+          return Promise.all((r.fotos||[]).map(function(f){ return dadosImagem(f.src); }));
+        }).then(function(imgs){
+          feitos++; bt.textContent='Fotos '+feitos+'/'+regs.length+'...';
+          var alt=imgs.length>1?100:108;
+          if (y+14+alt>H-14) { doc.addPage(); y=M; }
+          doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(26,26,46);
+          doc.text('ZONA '+x.zona+' — SEÇÃO '+x.sec,M,y+4);
+          doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(90,90,90);
+          var linha=cs.map(function(c){return c.nome+': '+votosDe(x,c.id)}).join('   ·   ')+'   ·   digitado por '+x.por;
+          doc.text(doc.splitTextToSize(linha,W-2*M)[0],M,y+9);
+          y+=12;
+          var n=Math.max(1,imgs.length), larg=(W-2*M-(n-1)*4)/n;
+          imgs.forEach(function(img,i){
+            var bx=M+i*(larg+4);
+            doc.setDrawColor(220,224,230); doc.rect(bx,y,larg,alt);
+            pdfImagem(doc,img,bx+1,y+1,larg-2,alt-2);
+          });
+          if (!imgs.length) { doc.setTextColor(150,150,150); doc.text('Sem foto anexada',M,y+5); alt=8; }
+          y+=alt+8;
+        });
+      });
+    },Promise.resolve()).then(function(){ return doc; });
+  }).then(function(doc){
+    // numeração das páginas
+    var n=doc.getNumberOfPages();
+    for (var i=1;i<=n;i++){ doc.setPage(i); doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(150,150,150);
+      doc.text('Contagem de Votos · página '+i+' de '+n,210/2,297-7,{align:'center'}); }
+    doc.save('relatorio_apuracao_'+new Date().toISOString().slice(0,10)+(comFotos?'_com_fotos':'')+'.pdf');
+    showMsg('ok-res','RELATÓRIO PDF GERADO');
+  }).catch(function(e){ appAlert((e&&e.message)||'NÃO FOI POSSÍVEL GERAR O PDF.'); })
+    .then(function(){ bt.disabled=false; bt.textContent='📄 Gerar relatório (PDF)'; });
+}
+
 function carregarJSZip(){
   if (window.JSZip) return Promise.resolve();
   return new Promise(function(ok,falha){
@@ -1033,7 +1183,7 @@ function baixarFotosZip(){
 }
 function zerarApuracao(){
   var n=DATA.regs.length;
-  excluirComSenha('Zerar apuração','APAGAR AS '+n+' SEÇÕES DIGITADAS E TODAS AS FOTOS?\nISSO NÃO PODE SER DESFEITO. EXPORTE A PLANILHA E AS FOTOS ANTES.',function(senha){
+  excluirComSenha('Zerar apuração','APAGAR AS '+n+' SEÇÕES DIGITADAS E TODAS AS FOTOS?\nISSO NÃO PODE SER DESFEITO. GERE O RELATÓRIO PDF COM AS FOTOS ANTES.',function(senha){
     return api('DELETE','regs',undefined,senha).then(function(){ cacheFotos={}; abertos={}; showMsg('ok-res','APURAÇÃO ZERADA'); carregarEstado(true); });
   });
 }
