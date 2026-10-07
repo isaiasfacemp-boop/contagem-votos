@@ -180,6 +180,7 @@ async function onRequest(ctx) {
         totalSec: config.totalSec || 0,
         totalEleitores: config.totalEleitores || 0,
         mostrarPct: config.mostrarPct ? 1 : 0,
+        mostrarPctVotos: config.mostrarPctVotos ? 1 : 0,
         encerrado: config.encerrado ? 1 : 0,
         zonas,
         versao: config.versao || 0,
@@ -193,12 +194,14 @@ async function onRequest(ctx) {
       const sec = parseInt(body.totalSec, 10);
       const ele = parseInt(body.totalEleitores, 10) || 0;
       const mostrarPct = Number(body.mostrarPct) === 1 ? 1 : 0;
+      const mostrarPctVotos = Number(body.mostrarPctVotos) === 1 ? 1 : 0;
       if (!(sec > 0)) return erro("Informe o número de seções.");
       if (ele < 0) return erro("Quantidade de eleitores inválida.");
       await db.batch([
         db.prepare("INSERT OR REPLACE INTO config (k, v) VALUES (?, ?)").bind("totalSec", String(sec)),
         db.prepare("INSERT OR REPLACE INTO config (k, v) VALUES (?, ?)").bind("totalEleitores", String(ele)),
         db.prepare("INSERT OR REPLACE INTO config (k, v) VALUES (?, ?)").bind("mostrarPct", String(mostrarPct)),
+        db.prepare("INSERT OR REPLACE INTO config (k, v) VALUES (?, ?)").bind("mostrarPctVotos", String(mostrarPctVotos)),
         db.prepare(SQL_VERSAO)
       ]);
       return json({ ok: true });
