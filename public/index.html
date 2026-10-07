@@ -145,6 +145,7 @@ body.tv .tv-bar{display:flex}
 .card-label{font-size:10px;color:#777;margin-bottom:4px;line-height:1.4;text-transform:uppercase;font-weight:700;letter-spacing:.04em}
 .card-value{font-size:26px;font-weight:700;color:#1a1a2e;line-height:1}
 .card-pct{font-size:14px;font-weight:700;margin-top:5px}
+.card-pct-votos{font-size:13px;font-weight:700;margin-top:2px;opacity:.8}
 /* Resumo igual ao telão: foto inteira ao lado dos votos */
 .header .card{display:grid;grid-template-columns:1fr 1fr;gap:10px;background:none;border:none;box-shadow:none;overflow:visible}
 .header .card-img-wrap{position:relative;height:auto;aspect-ratio:4/5;border-radius:12px;overflow:hidden;background:#fff;border-top:5px solid var(--cor);box-shadow:0 2px 8px rgba(0,0,0,.1)}
@@ -157,6 +158,7 @@ body.tv .tv-bar{display:flex}
 .header .card-value{font-size:32px;font-weight:900;letter-spacing:-.01em}
 .header .card-rot{font-size:10px;font-weight:800;color:#999;letter-spacing:.1em;text-transform:uppercase}
 .header .card-pct{font-size:20px;font-weight:900;margin-top:2px}
+.header .card-pct-votos{font-size:16px;font-weight:800;margin-top:1px;opacity:.8}
 @media (max-width:560px){.header{grid-template-columns:1fr}.header .card-value{font-size:36px}}
 
 .bar-section{background:#fff;border-radius:12px;border:1px solid #e0e0e0;padding:1rem;margin-bottom:1rem}
@@ -360,6 +362,7 @@ body.tv .tv-bar{display:flex}
     <div class="tab-pane active" id="pane-resumo">
       <button class="btn-tv" onclick="entrarModoTV()">📺 Modo TV / Telão</button>
       <div class="base-calc" id="base-cards"></div>
+      <div class="base-calc" id="base-cards-votos" style="display:none"></div>
       <div class="header" id="resumo-cards"></div>
       <div class="bar-section">
         <div class="base-calc" id="base-calc"></div>
@@ -426,7 +429,8 @@ body.tv .tv-bar{display:flex}
         <div class="form-grid">
           <div class="field"><label>Nº de seções</label><input type="number" id="cfg-secoes" min="1" placeholder="Ex: 245"></div>
           <div class="field"><label>Qtd. de eleitores</label><input type="text" inputmode="numeric" id="cfg-eleitores" placeholder="Ex: 100.000" oninput="mascaraMilhar(this)"></div>
-          <div class="field"><label>Mostrar porcentagem</label><select id="cfg-mostrar-pct"><option value="0">Não mostrar</option><option value="1">Mostrar</option></select></div>
+          <div class="field"><label>% sobre eleitores</label><select id="cfg-mostrar-pct"><option value="0">Não mostrar</option><option value="1">Mostrar</option></select></div>
+          <div class="field"><label>% sobre votos apurados</label><select id="cfg-mostrar-pct-votos"><option value="0">Não mostrar</option><option value="1">Mostrar</option></select></div>
         </div>
         <button class="btn-salvar" onclick="salvarConfig()">✓ Salvar configuração</button>
         <div class="err" id="err-cfg"></div>
@@ -1364,6 +1368,7 @@ function carregarConfig() {
   document.getElementById('cfg-secoes').value=DATA.totalSec;
   document.getElementById('cfg-eleitores').value=DATA.totalEleitores?DATA.totalEleitores.toLocaleString('pt-BR'):'';
   document.getElementById('cfg-mostrar-pct').value=DATA.mostrarPct?'1':'0';
+  document.getElementById('cfg-mostrar-pct-votos').value=DATA.mostrarPctVotos?'1':'0';
 }
 
 function salvarConfig() {
@@ -1372,8 +1377,9 @@ function salvarConfig() {
   var sec=parseInt(document.getElementById('cfg-secoes').value);
   var ele=parseInt(document.getElementById('cfg-eleitores').value.replace(/\D/g,''))||0;
   var mostrarPct=document.getElementById('cfg-mostrar-pct').value==='1'?1:0;
+  var mostrarPctVotos=document.getElementById('cfg-mostrar-pct-votos').value==='1'?1:0;
   if (!(sec>0)) {err.textContent='INFORME O NÚMERO DE SEÇÕES';err.style.display='block';return;}
-  api('PUT','config',{totalSec:sec,totalEleitores:ele,mostrarPct:mostrarPct}).then(function() {
+  api('PUT','config',{totalSec:sec,totalEleitores:ele,mostrarPct:mostrarPct,mostrarPctVotos:mostrarPctVotos}).then(function() {
     ok.textContent='CONFIGURAÇÃO SALVA';ok.style.display='block';
     setTimeout(function(){ok.style.display='none'},2500);
     return carregarEstado(true);
@@ -1453,7 +1459,8 @@ function montarCandidatos(){
       +'<div class="card-img-wrap">'+(f?'<div class="bg" style="background-image:url(\''+f+'\')"></div><img class="card-img" src="'+f+'" alt="">':'<div class="card-sem-foto">👤</div>')+'</div>'
       +'<div class="card-body"><div class="card-label"><span class="card-nome">'+esc(c.nome)+'</span>'+(c.cargo?'<span class="card-cargo">'+esc(c.cargo)+'</span>':'')+'</div>'
       +'<div class="card-value" id="tot-'+c.id+'">0</div><div class="card-rot">votos</div>'
-      +'<div class="card-pct" style="color:'+c.cor+'" id="pct-'+c.id+'">0%</div></div></div>';
+      +'<div class="card-pct" style="color:'+c.cor+'" id="pct-'+c.id+'">0%</div>'
+      +'<div class="card-pct card-pct-votos" style="color:'+c.cor+'" id="pct-v-'+c.id+'">0%</div></div></div>';
   }).join('');
   document.getElementById('barras-ult').innerHTML=cs.map(function(c,i){
     return '<div class="cand-row"'+(i===cs.length-1?' style="margin-bottom:0"':'')+'><div class="cand-header">'
@@ -1475,22 +1482,21 @@ function renderAll() {
   montarCandidatos();
   var cs=candidatos();
   var tots=cs.map(function(c){ return DATA.regs.reduce(function(a,x){return a+votosDe(x,c.id)},0); });
-  var ele=DATA.totalEleitores||0, pcts;
+  var ele=DATA.totalEleitores||0;
   var bcc=document.getElementById('base-cards');
-  if (ele>0) {
-    // % de cada candidato sobre o total de eleitores
-    pcts=tots.map(function(t){return t/ele*100});
-    bcc.textContent='% SOBRE '+ele.toLocaleString('pt-BR')+' ELEITORES';
-  } else {
-    pcts=pctsSomando100(tots);
-    bcc.textContent='% SOBRE VOTOS APURADOS — DEFINA OS ELEITORES NO ADMIN';
-  }
-  // porcentagem nos cards: só aparece se o admin escolher "Mostrar"
+  var bccv=document.getElementById('base-cards-votos');
+  // % sobre eleitores
+  var pctsEle=ele>0?tots.map(function(t){return t/ele*100}):tots.map(function(){return 0});
+  // % sobre votos apurados
+  var pctsVotos=pctsSomando100(tots);
   var mostrarPct=!!DATA.mostrarPct;
-  bcc.style.display=mostrarPct?'':'none';
+  var mostrarPctVotos=!!DATA.mostrarPctVotos;
+  if (bcc) { bcc.textContent=ele>0?'% SOBRE '+ele.toLocaleString('pt-BR')+' ELEITORES':'% SOBRE ELEITORES — DEFINA NO ADMIN'; bcc.style.display=mostrarPct?'':'none'; }
+  if (bccv) { bccv.textContent='% SOBRE VOTOS APURADOS'; bccv.style.display=mostrarPctVotos?'':'none'; }
   cs.forEach(function(c,i){
     document.getElementById('tot-'+c.id).textContent=tots[i].toLocaleString('pt-BR');
-    var pe=document.getElementById('pct-'+c.id); pe.textContent=fmtPct(pcts[i]); pe.style.display=mostrarPct?'':'none';
+    var pe=document.getElementById('pct-'+c.id); pe.textContent=fmtPct(pctsEle[i]); pe.style.display=mostrarPct?'':'none';
+    var pev=document.getElementById('pct-v-'+c.id); if(pev){ pev.textContent=fmtPct(pctsVotos[i]); pev.style.display=mostrarPctVotos?'':'none'; }
   });
   document.getElementById('badge-count').textContent=DATA.regs.length;
   var bc=document.getElementById('base-calc');
@@ -1529,6 +1535,14 @@ function renderAll() {
 
 // ===================== MODO TV / TELÃO (Full HD 1920x1080) =====================
 var tvTimer=null;
+var tvRelogioTimer=null;
+function tvIniciarRelogio(){
+  if(tvRelogioTimer) return; // já rodando
+  function tick(){ var el=document.getElementById('tv-hora'); if(el) el.textContent=new Date().toLocaleTimeString('pt-BR'); }
+  tick();
+  tvRelogioTimer=setInterval(tick,1000);
+}
+function tvPararRelogio(){ if(tvRelogioTimer){ clearInterval(tvRelogioTimer); tvRelogioTimer=null; } }
 
 // Escala o palco 1920x1080 para caber em qualquer tela, mantendo a proporção 16:9
 function tvAplicar() {
@@ -1568,17 +1582,29 @@ function renderTV() {
   }
   // totais (cards) — mesmos números do Resumo
   var mostrarPctTV=!!DATA.mostrarPct;
+  var mostrarPctVotosTV=!!DATA.mostrarPctVotos;
   cs.forEach(function(c){
     var v=document.getElementById('tv-v-'+c.id);
     v.textContent=document.getElementById('tot-'+c.id).textContent;
     var pe=document.getElementById('tv-p-'+c.id);
-    pe.textContent=document.getElementById('pct-'+c.id).textContent; pe.style.display=mostrarPctTV?'':'none';
+    // preferência: se % sobre votos estiver ativa, mostrar ela no TV; senão % sobre eleitores
+    if (mostrarPctVotosTV) {
+      var pvEl=document.getElementById('pct-v-'+c.id);
+      pe.textContent=pvEl?pvEl.textContent:document.getElementById('pct-'+c.id).textContent;
+      pe.style.display='';
+    } else if (mostrarPctTV) {
+      pe.textContent=document.getElementById('pct-'+c.id).textContent; pe.style.display='';
+    } else {
+      pe.style.display='none';
+    }
     var box=v.parentNode, fs=n<=2?112:(n===3?96:76);
     v.style.fontSize=fs+'px';
     while (v.scrollWidth>box.clientWidth-30 && fs>40) { fs-=4; v.style.fontSize=fs+'px'; }
   });
-  document.getElementById('tv-base').textContent=document.getElementById('base-cards').textContent;
-  document.getElementById('tv-base').style.display=mostrarPctTV?'':'none';
+  var tvBaseEl=document.getElementById('tv-base');
+  if (mostrarPctVotosTV) { tvBaseEl.textContent=document.getElementById('base-cards-votos').textContent||'% SOBRE VOTOS APURADOS'; tvBaseEl.style.display=''; }
+  else if (mostrarPctTV) { tvBaseEl.textContent=document.getElementById('base-cards').textContent; tvBaseEl.style.display=''; }
+  else { tvBaseEl.style.display='none'; }
   // última seção (barras)
   var ult=DATA.regs[DATA.regs.length-1];
   var pU=pctsSomando100(cs.map(function(c){return votosDe(ult,c.id)}));
@@ -1640,12 +1666,14 @@ function tvMostrarBarra() {
 function entrarModoTV() {
   document.body.classList.add('tv');
   tvAplicarTema(); renderTV(); tvAplicar();
+  tvIniciarRelogio();
   if (currentUser) iniciarPolling();   // passa a atualizar a cada 2 s
   if (!document.fullscreenElement) tvTelaCheia();
   tvMostrarBarra();
 }
 function sairModoTV() {
   document.body.classList.remove('tv');
+  tvPararRelogio();
   if (currentUser) iniciarPolling();   // volta para 5 s
   if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen();
   showTab('resumo');
